@@ -29,15 +29,11 @@ When DrawerJS goes into **edit mode**, it attaches a click handler to `document.
 
 ### State management functions
 
-There are two functions that manage state: [`_startEditing`](https://g-tac.visualstudio.com/_git/DrawerJs?path=%2Fsrc%2FDrawer.js&version=GBmaster&_a=contents&line=787&lineStyle=plain&lineEnd=787&lineStartColumn=20&lineEndColumn=33) 
-and [`_stopEditing`](https://g-tac.visualstudio.com/_git/DrawerJs?path=%2Fsrc%2FDrawer.js&version=GBmaster&_a=contents&line=877&lineStyle=plain&lineEnd=877&lineStartColumn=20&lineEndColumn=32).
+There are two functions that manage state: [`_startEditing`] and [`_stopEditing`]
 
-Here we will cover only [`_startEditing`](https://g-tac.visualstudio.com/_git/DrawerJs?path=%2Fsrc%2FDrawer.js&version=GBmaster&_a=contents&line=787&lineStyle=plain&lineEnd=787&lineStartColumn=20&lineEndColumn=33) 
-because 
-[`_stopEditing`](https://g-tac.visualstudio.com/_git/DrawerJs?path=%2Fsrc%2FDrawer.js&version=GBmaster&_a=contents&line=877&lineStyle=plain&lineEnd=877&lineStartColumn=20&lineEndColumn=32) does all the same but in reverse order.
+Here we will cover only [`_startEditing`] because [`_stopEditing`] does all the same but in reverse order.
 
-[`_startEditing`](https://g-tac.visualstudio.com/_git/DrawerJs?path=%2Fsrc%2FDrawer.js&version=GBmaster&_a=contents&line=787&lineStyle=plain&lineEnd=787&lineStartColumn=20&lineEndColumn=33) 
-function is called from DrawerJS code when user clicks on the image (drawerjs instance). 
+[`_startEditing`] function is called from DrawerJS code when user clicks on the image (drawerjs instance). 
 
 The purpose of the function is:
 
@@ -45,10 +41,9 @@ The purpose of the function is:
  
 - Construct new `fabric.js` canvas wrapper around raw html5 `<canvas>` element.
 
-- Pass the data about objects on canvas to `fabric.js` wrapper object. [Drawer.prototype.loadCanvas](https://g-tac.visualstudio.com/_git/DrawerJs?path=%2Fsrc%2FDrawer.Storage.js&version=GBmaster&_a=contents&line=79&lineStyle=plain&lineEnd=79&lineStartColumn=3&lineEndColumn=30) function which is located at `Drawer.Storage.js` used for that purpose.
+- Pass the data about objects on canvas to `fabric.js` wrapper object. [Drawer.prototype.loadCanvas] function which is located at `Drawer.Storage.js` used for that purpose.
   
-  [Drawer.prototype.loadCanvas](https://g-tac.visualstudio.com/_git/DrawerJs?path=%2Fsrc%2FDrawer.Storage.js&version=GBmaster&_a=contents&line=79&lineStyle=plain&lineEnd=79&lineStartColumn=3&lineEndColumn=30)
-  deserializes canvas data (objects/sizes/colors/dimensions) using `fabric.js` `loadFromJSON` method, fixes objects properties, triggers `EVENT_LOADED_FROM_JSON` event and calls [Drawer.prototype.onCanvasLoaded](https://g-tac.visualstudio.com/_git/DrawerJs?path=%2Fsrc%2FDrawer.Storage.js&version=GBmaster&_a=contents&line=102&lineStyle=plain&lineEnd=102&lineStartColumn=13&lineEndColumn=27) function.
+  [Drawer.prototype.loadCanvas] deserializes canvas data (objects/sizes/colors/dimensions) using `fabric.js` `loadFromJSON` method, fixes objects properties, triggers `EVENT_LOADED_FROM_JSON` event and calls [Drawer.prototype.onCanvasLoaded] function.
   
   When all post-load job is done, `EVENT_CANVAS_READY` gets triggered on DrawerJS object. This is the moment where all registered plugins get notified about canvas readyness and prepare themselves for edit mode.
   
@@ -67,13 +62,11 @@ When user clicks on image, DrawerJS goes into edit mode and restores all canvas 
 
 All drawing tools as well as most of other features (toolbars, shape options) are not tied to DrawerJS and are separate modules.
 
-Drawer uses [Drawer.prototype.loadPlugins](https://g-tac.visualstudio.com/_git/DrawerJs?path=%2Fsrc%2FDrawer.js&version=GBmaster&_a=contents&line=537&lineStyle=plain&lineEnd=537&lineStartColumn=20&lineEndColumn=31)
-function to load plugins and store their instances in `_pluginsInstances` private variable.
+Drawer uses [Drawer.prototype.loadPlugins] function to load plugins and store their instances in `_pluginsInstances` private variable.
 
 When plugin is instantiated DrawerJS passes a hashmap of options to it from own `options.pluginsConfig[pluginName]` property.
 
-DrawerJS uses [Events](https://g-tac.visualstudio.com/_git/DrawerJs?path=%2Fsrc%2FDrawer.Events.js&version=GBmaster&_a=contents&line=6&lineStyle=plain&lineEnd=6&lineStartColumn=20&lineEndColumn=36) 
-system to communicate with plugins.
+DrawerJS uses [Events] system to communicate with plugins.
 
 All plugins receive DrawerJS instance in their constructor and should subscribe to any required events with `Drawer.on(EVENT_NAME) method.
 

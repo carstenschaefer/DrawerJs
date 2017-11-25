@@ -46,7 +46,7 @@
     
   - `plugins`
   
-    All DrawerJS plugins. [More on plugins system](https://g-tac.visualstudio.com/_git/DrawerJs?path=%2FARCHITECTURE.md&version=GBmaster&_a=contents&line=66&lineStyle=plain&lineEnd=66&lineStartColumn=1&lineEndColumn=17)
+    All DrawerJS plugins. [More on plugins system]
   
   - `toolbars`
   
@@ -55,8 +55,7 @@
     
  # File structure
  
- We have a file [Globals.js](https://g-tac.visualstudio.com/_git/DrawerJs?path=%2Fsrc%2FGlobals.js&version=GBmaster&_a=contents&line=7&lineStyle=plain&lineEnd=7&lineStartColumn=1&lineEndColumn=9)
- which defines DrawerJS namespace as well as some child namespaces like `DrawerJS.plugins`.
+ We have a file [Globals.js] which defines DrawerJS namespace as well as some child namespaces like `DrawerJS.plugins`.
  
  We use Self-Invoking functions to scope file's namespace.
  

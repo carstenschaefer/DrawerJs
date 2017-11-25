@@ -1,6 +1,9 @@
 # DrawerJS
 
-DrawerJS is a html5 widget that allows drawing on html5 canvas element. Supports mobile devices. 
+DrawerJS is a HTML5 widget that allows drawing and writing on HTML5 canvas element. Supports mobile devices. 
+
+Here you will find more informations about features, examples, and you can test it live: [DrawerJs](https://www.DrawerJs.com)
+Here you will find a detailed documentation about the usage and its configuration: [DrawerJs - Docs](https://www.drawerjs.com/documentation)
 
 # Documentation:
 
