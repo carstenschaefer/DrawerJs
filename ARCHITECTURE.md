@@ -47,7 +47,6 @@ The purpose of the function is:
   
   When all post-load job is done, `EVENT_CANVAS_READY` gets triggered on DrawerJS object. This is the moment where all registered plugins get notified about canvas readyness and prepare themselves for edit mode.
   
-  [Detailed description about plugins system](./ARCHITECTURE_PLUGINS.md).
 
 ### Canvas data
 
