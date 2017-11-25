@@ -1,0 +1,23 @@
+.editable-canvas-stroke-width .toolbar-item-description {
+    display: inline-block;
+}
+
+.editable-canvas-stroke-width input.editable-canvas-stroke-width-input {
+    display: inline-block;
+    vertical-align: top;
+    width: 100px;
+    margin-left: 7px;
+    margin-right: 7px;
+    position: relative;
+    right: 0;
+}
+
+.editable-canvas-stroke-width .editable-canvas-stroke-width-label {
+    padding-left: 10px;
+}
+
+span.toolbar-label.editable-canvas-stroke-width-indicator {
+    width: 50px;
+    display: inline-block;
+    margin-right: 5px;
+}

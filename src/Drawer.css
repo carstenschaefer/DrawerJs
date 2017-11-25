@@ -1,0 +1,141 @@
+body {
+    overflow: scroll !important;
+}
+
+.hidden {
+    display: none !important;
+    visibility: hidden !important
+}
+
+#redactor-drawer-box .sp-replacer {
+    padding: 0;
+    margin: 0;
+    width: 32px;
+    height: 32px;
+}
+
+#redactor-drawer-box .sp-preview {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#redactor-drawer-box .sp-preview-inner {
+    height: 100%;
+    width: 100%;
+}
+
+#redactor-drawer-box .sp-dd {
+    display: none;
+}
+
+#redactor-drawer-box {
+    vertical-align: middle;
+    outline: none;
+    top: 35px;
+    background: white;
+    transition: none;
+    background: transparent;
+    box-sizing: content-box;
+}
+
+#redactor-drawer-box.animated {
+    transition: height 0.5s ease-out,
+    width 0.5s ease-out 0s,
+    left 0.5s ease-out 0s,
+    top 0.5s ease-out 0s;
+}
+
+body.drawer-moving #redactor-drawer-box.drawer-instance-container,
+body.drawer-moving #redactor-drawer-box.drawer-instance-container .canvas-container,
+body.drawer-resizing #redactor-drawer-box.drawer-instance-container,
+body.drawer-resizing #redactor-drawer-box.drawer-instance-container .canvas-container{
+    transition: none;
+}
+
+body.drawer-zoom-moving,
+body.drawer-zoom-moving * {
+    cursor: -webkit-grabbing !important;;
+    cursor: grabbing !important;
+}
+
+body.drawer-moving,
+body.drawer-moving * {
+    cursor: move !important;
+}
+
+body.drawer-resizing,
+body.drawer-resizing * {
+    cursor: nwse-resize !important;
+}
+
+
+#redactor-drawer-box .canvas-container {
+    margin: 0;
+    box-shadow: 0px 0px 50px rgba(0, 0, 0, 0.03);
+    z-index: 200;
+    overflow: hidden;
+    transition: none;
+}
+
+#redactor-drawer-box.animated .canvas-container{
+    transition: height 0.5s ease-out,
+    width 0.5s ease-out 0s,
+    left 0.5s ease-out 0s,
+    top 0.5s ease-out 0s;
+}
+
+#redactor-drawer-box .canvas-container canvas {
+    background: transparent;
+}
+
+.noselect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/**
+ * DrawerJs properties modal.
+ */
+#redactor-drawer-properties .drawer-properties-width,
+#redactor-drawer-properties .drawer-properties-height {
+    width: 45%;
+    text-align: center;
+}
+
+#redactor-drawer-properties .size-separator {
+    width: 10%;
+    display: inline-block;
+    text-align: center;
+}
+
+#redactor-drawer-box {
+    font-family: 'Arial', sans-serif;
+}
+
+.redactor-editor .btn-group ul {
+    position: absolute;
+    left: -2px;
+    top: 30px;
+    padding: 0;
+    background: white;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+
+.editable-canvas-image {
+    opacity: 1;
+}
+
+.editable-canvas-image.edit-mode {
+    opacity: 0;
+}
+
+#redactor-modal-overlay, #redactor-modal-box, #redactor-modal {
+    z-index: 1100 !important;
+}

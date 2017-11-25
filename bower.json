@@ -1,0 +1,7 @@
+{
+  "name": "drawerJs",
+  "version": "0.1.0",
+  "main": ["dist/drawerJs.standalone.js", "dist/drawerJs.css"],
+  "private": true,
+  "dependencies": {  }
+}

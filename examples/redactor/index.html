@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script src="../../lib/jquery-1.10.1.min.js"></script>
+    <script src="../../lib/jquery-migrate-1.2.1.min.js"></script>
+
+    <link rel="stylesheet" href="/assets/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/assets/font-awesome.min.css">
+
+    <link rel="stylesheet" href="redactor/redactor.css"/>
+
+    <script src="redactor/redactor.js"></script>
+
+    <script src="RedactorCallbacksFix.js"></script>
+
+    <script src="redactor/plugins/fontcolor.js"></script>
+    <script src="redactor/plugins/fontfamily.js"></script>
+    <script src="redactor/plugins/fontsize.js"></script>
+    <script src="redactor/plugins/imagemanager.js"></script>
+    <script src="redactor/plugins/video.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+
+    <link rel="stylesheet" href="../../dist/drawerJs.css"/>
+    <script src="../../dist/drawerJs.redactor.js"></script>
+
+    <!-- Custom localization example -->
+    <script src="DrawerLocalization.js"></script>
+
+    <style type="text/css">
+        .toolbar-container {
+            position: absolute;
+        }
+
+        .redactor-box {
+            width: 100%;
+            left: 0;
+        }
+
+        /*disable mobile device zooming when user clicks on textarea */
+        .redactor-box textarea {
+            font-size: 17px;
+        }
+
+        .redactor-editor,.redactor-editor p{
+            font-size: 17px !important;
+        }
+
+        @media only screen and (max-width: 7500px) {
+            .container {
+                max-width: 100% !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <div class="panel panel-default">
+        <div class="panel-heading"><h3>DrawerJs demo page</h3></div>
+        <div class="panel-body">
+            <div class="form-group">
+                <button class="btn btn-primary" onclick="saveUsingHtmlContainers()">Save to localStorage</button>
+                <button class="btn btn-primary" onclick="load()">Load from localStorage</button>
+            </div>
+            <div class="form-group">
+                <textarea class="redactor" cols="30" rows="10" >
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                        Quisque luctus diam nunc, mollis suscipit libero porta
+                        a. Duis accumsan gravida ex eu bibendum. Vivamus
+                        facilisis congue lacus, quis consequat tellus interdum
+                        eu. Sed molestie posuere erat, vitae gravida est
+                        ultricies tincidunt. Nulla id ornare leo. Nullam
+                        malesuada laoreet neque ut tempus. Sed leo velit, cursus
+                        sed dolor quis, imperdiet commodo diam. Praesent
+                        consequat non metus vitae vestibulum. Vestibulum eu
+                        fringilla dui. Donec viverra sem vel dui bibendum
+                        pulvinar. In vulputate leo vitae diam gravida, quis
+                        egestas turpis gravida. Ut semper lacus turpis, eget
+                        ultricies turpis pretium sit amet. Vivamus auctor tellus
+                        ac iaculis pellentesque. Aenean bibendum rutrum lectus,
+                        quis dictum arcu suscipit et.</p>
+                    <p>Phasellus lacinia, mi vitae fermentum euismod, arcu justo fringilla
+                        felis, at scelerisque dolor nisi ut ligula. Vivamus interdum metus
+                        nisl, ac egestas nisi tincidunt eget. Donec quis tellus consectetur,
+                        pretium metus vitae, maximus orci. Phasellus faucibus, nisl a
+                        ultrices feugiat, orci dolor varius enim, eget ultrices felis justo
+                        ac mauris. Donec rutrum sodales risus quis sodales. Integer
+                        porttitor, neque pharetra porta sagittis, nibh est aliquet metus, in
+                        pulvinar quam felis a quam. Nunc imperdiet volutpat nulla a ornare.
+                        Integer vel ipsum eget nunc sollicitudin placerat. Nam eu auctor
+                        nunc. Suspendisse vulputate libero nec vehicula sagittis. Vestibulum
+                        imperdiet lorem sed efficitur malesuada. Donec volutpat mauris
+                        felis. Vestibulum id diam eu lectus bibendum sagittis nec accumsan
+                        felis. Aenean sed ipsum sodales, congue risus at, eleifend urna.
+                        Vestibulum sit amet blandit eros.</p>
+                    <img src='http://michaelprescott.typepad.com/.a/6a00d83451574c69e201a511c3157d970c-pi'/>
+                </textarea>
+            </div>
+            <strong>Redactor config</strong>
+            <pre id="redactor-config-container">
+
+            </pre>
+
+            <strong>Canvas data container</strong>
+            <p>DrawerJs will store and retrieve its data from this container.</p>
+            <p>Keys of this object are unique canvas generated ids.</p>
+            <pre id="drawer-canvas-data-container" contenteditable="true"></pre>
+
+            <strong>Canvas images container</strong>
+            <p>If contentConfig.imagesContainer is specified, then drawer's
+                rendered images will be stored to this container instead of in-place drawer's image</p>
+            <pre id="drawer-canvas-images-container"></pre>
+        </div>
+    </div>
+</div>
+<script>
+    var saveUsingHtmlContainers = function () {
+        var content = $('.redactor').redactor('code.get');
+        var canvasData = $('#drawer-canvas-data-container').text();
+        var imagesData = $('#drawer-canvas-images-container').text();
+
+        console.log('content to save:');
+        console.log(content);
+        localStorage.setItem('content', content);
+        localStorage.setItem('contentCanvasData', canvasData);
+        localStorage.setItem('contentImagesData', imagesData);
+    };
+
+    var load = function () {
+        // firstly clean all content from redactor
+        $('.redactor').redactor('code.set', '');
+        $('.redactor').redactor('code.startSync');
+
+        var content = localStorage.getItem('content');
+        var canvasData = localStorage.getItem('contentCanvasData');
+        var imagesData = localStorage.getItem('contentImagesData');
+
+        $('#drawer-canvas-data-container').text(canvasData);
+        $('#drawer-canvas-images-container').text(imagesData);
+        $('.redactor').redactor('code.set', content);
+    };
+
+    $(document).ready(function () {
+        var redactorConfig = {
+            buttonSource: true,
+            imageUpload: '/imageUpload/',
+            imageManagerJson: '/imageManagerJson/',
+            buttons: [
+                'bold',
+                'html',
+                'image'
+            ],
+            plugins: [
+                'callbacksFix',
+                'video',
+                'drawer'
+            ],
+            drawer: {
+                // this function will be called when canvas needs to determine
+                // whether it is working on touch device
+//                detectTouch: function(){
+//                    // if TRUE is returned canvas will assume that it is
+//                    // working on touch device
+//                    return true;
+//                },
+                debug: true,
+                texts: CustomLocalization,
+                contentConfig: {
+                    // if true, drawing result will be converted to
+                    // base64 png string and set as a source of drawer's image
+                    saveAfterInactiveSec: 5,
+                    saveInHtml: false,
+                    imagesContainer: '#drawer-canvas-images-container',
+                    canvasDataContainer: '#drawer-canvas-data-container'
+                },
+
+                toolbarSize: 35, // width and height of toolbar buttons
+                toolbarSizeTouch: 43,
+
+                tooltipCss: {
+                    color: 'white',
+                    background: 'black'
+                },
+
+                backgroundCss: 'transparent',
+
+                activeColor: '#19A6FD',
+
+                canvasProperties: {
+                    selectionColor: 'rgba(255, 255, 255, 0.3)',
+
+                    // first digit is space length between dashes and second is dashes length
+                    selectionDashArray: [3, 8],
+
+                    selectionBorderColor: '#5f5f5f'
+                },
+
+                objectControls: {
+                    borderColor: 'rgba(102,153,255,0.75)',
+                    borderOpacityWhenMoving: 0.4,
+                    cornerColor: 'rgba(102,153,255,0.5)',
+                    cornerSize: 12,
+                    hasBorders: true
+                },
+
+                objectControlsTouch: {
+                    borderColor: 'rgba(102,153,255,0.75)',
+                    borderOpacityWhenMoving: 0.4,
+                    cornerColor: 'rgba(102,153,255,0.5)',
+                    cornerSize: 20,
+                    hasBorders: true
+                },
+
+                plugins: [
+                    // Drawing tools
+                    'Pencil',
+                    'Eraser',
+                    'Text',
+                    'Line',
+                    'ArrowOneSide',
+                    'ArrowTwoSide',
+                    'Triangle',
+                    'Rectangle',
+                    'Circle',
+                    'Image',
+                    'BackgroundImage',
+                    'Polygon',
+
+                    // Drawing options
+                    //'ColorHtml5',
+                    'Color',
+                    'ShapeBorder',
+                    'BrushSize',
+                    'OpacityOption',
+                    'LineWidth',
+                    'StrokeWidth',
+
+                    'Resize',
+                    'Fullscreen',
+                    'CloseButton',
+                    'OvercanvasPopup',
+                    'OpenPopupButton',
+                    'MinimizeButton',
+                    'ToggleVisibilityButton',
+                    'MovableFloatingMode',
+
+                    'TextLineHeight',
+                    'TextAlign',
+
+                    'TextFontFamily',
+                    'TextFontSize',
+                    'TextFontWeight',
+                    'TextFontStyle',
+                    'TextDecoration',
+                    'TextColor',
+                    'TextBackgroundColor'
+                ],
+
+                defaultActivePlugin : {name :'Pencil', mode : 'onNew'},
+
+
+                pluginsConfig: {
+                    'ShapeBorder': {
+                        color: 'rgba(0, 0, 0, 0)'
+                    },
+                    'Pencil': {
+                        // 'pencil' is default build-in icon which is font-awesome fa-pencil icon converted to cur
+                        // Any other cursor should be specified in css-url format like:
+                        // "url(path/to/cur/file.cur), default"
+                        // where "default" is cursor name that will be applied if url is not available.
+                        // read more here: https://developer.mozilla.org/en-US/docs/Web/CSS/cursor
+                        cursorUrl: 'pencil',
+                        brushSize: 3
+                    },
+                    'Eraser': {
+                        brushSize: 5
+                    },
+                    'Circle': {
+                        centeringMode: 'normal'
+                    },
+                    'Rectangle': {
+                        centeringMode: 'normal'
+                    },
+                    'Triangle': {
+                        centeringMode: 'normal'
+                    },
+                    'Text': {
+                        // keys here are font names displayes in the list, values are css properties for font-family
+                        fonts: {
+                            'Georgia': 'Georgia, serif',
+                            'Palatino': "'Palatino Linotype', 'Book Antiqua', Palatino, serif",
+                            'Times New Roman': "'Times New Roman', Times, serif",
+
+                            'Arial': 'Arial, Helvetica, sans-serif',
+                            'Arial Black': "'Arial Black', Gadget, sans-serif",
+                            'Comic Sans MS': "'Comic Sans MS', cursive, sans-serif",
+                            'Impact': 'Impact, Charcoal, sans-serif',
+                            'Lucida Grande': "'Lucida Sans Unicode', 'Lucida Grande', sans-serif",
+                            'Tahoma': 'Tahoma, Geneva, sans-serif',
+                            'Trebuchet MS': "'Trebuchet MS', Helvetica, sans-serif",
+                            'Verdana': 'Verdana, Geneva, sans-serif',
+
+                            'Courier New': "'Courier New', Courier, monospace",
+                            'Lucida Console': "'Lucida Console', Monaco, monospace"
+                        },
+                        // default font name
+                        defaultFont: 'Palatino'
+                    },
+                    Image : {
+                        maxImageSizeKb : 1024, // 1 MB
+                        scaleDownLargeImage : true,
+                        acceptedMIMETypes: ['image/jpeg', 'image/png', 'image/gif']
+                    },
+                    'ShapeContextMenu': {
+                        position: {
+                            // 'rightBottom': context menu will be placed at shape's right bottom corner
+                            // 'cursor': context menu will be placed in the position of click
+                            touch: 'cursor',
+                            mouse: 'cursor'
+                        }
+                    }
+                }
+            }
+        };
+
+        $('.redactor').redactor(redactorConfig);
+        $('#redactor-config-container').text(JSON.stringify(redactorConfig, null, 2));
+    });
+</script>
+</body>
+</html>

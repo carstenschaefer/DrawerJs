@@ -1,0 +1,47 @@
+.redactor-drawer-resizer {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    left: 0%;
+    top: 0%;
+}
+
+.redactor-drawer-resizer .resizer-box {
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
+    height: 15px;
+    width: 15px;
+    z-index: 1003;
+    background: rgb(92, 92, 92);
+    cursor: nwse-resize;
+}
+
+.redactor-drawer-resizer .resizer-box.touch {
+    height: 25px;
+    width: 25px;
+}
+
+.toolbar-placeholder-bottom.toolbar-placeholder-inside .editable-canvas-toolbar:after,
+.toolbar-placeholder-right.toolbar-placeholder-inside .editable-canvas-toolbar:after {
+    position: absolute;
+    background: #fff;
+    display: block;
+    content: "";
+    z-index: 1105;
+    /*opacity:0;*/
+}
+
+.toolbar-placeholder-bottom.toolbar-placeholder-inside .editable-canvas-toolbar:after {
+    right: -1px;
+    top: 0px;
+    bottom: 0px;
+    width: 17px;
+}
+
+.toolbar-placeholder-right.toolbar-placeholder-inside .editable-canvas-toolbar:after {
+    right: 0px;
+    left: 0px;
+    bottom: -1px;
+    height: 17px;
+}

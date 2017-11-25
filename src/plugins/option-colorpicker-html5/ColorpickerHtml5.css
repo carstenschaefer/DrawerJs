@@ -1,0 +1,28 @@
+
+.editable-canvas-colorpicker {
+    width: 32px;
+    background: white;
+    height: 32px;
+    border: none;
+    -webkit-appearance: none;
+    position: relative;
+}
+
+.editable-canvas-colorpicker::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.editable-canvas-colorpicker::-webkit-color-swatch {
+    border: none;
+}
+
+ul.editable-canvas-toolbar li.editable-canvas-plugin-color .toolbar-label {
+    position: relative;
+    top: -9px;
+}
+
+ul.editable-canvas-toolbar li.editable-canvas-plugin-color {
+    width: auto;
+    padding-left: 10px;
+    text-align: left;
+}

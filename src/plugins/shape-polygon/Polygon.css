@@ -1,0 +1,11 @@
+button.stop-polygon {
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 1000;
+
+    background: white;
+    border: 1px solid rgb(226, 226, 226);
+    padding: 6px 15px;
+    box-shadow: 0px 0px 5px rgba(0,0,0,0.1);
+}

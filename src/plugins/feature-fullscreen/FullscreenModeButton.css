@@ -1,0 +1,38 @@
+#redactor-drawer-box.fullscreen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    background: #fff !important;
+    transition: none !important;
+    z-index: 100000;
+}
+
+#redactor-drawer-box.fullscreen .toolbar-button.btn-delete-canvas,
+#redactor-drawer-box.fullscreen .toolbar-button.btn-move,
+#redactor-drawer-box.fullscreen .toolbar-button.btn-minimize-canvas,
+#redactor-drawer-box.fullscreen .toolbar-button.btn-restore-canvas,
+#redactor-drawer-box.fullscreen .redactor-drawer-resizer{
+    display: none !important;
+}
+
+#redactor-drawer-box.fullscreen .fullscreenOverOther {
+    z-index: 2000 !important;
+}
+
+#redactor-drawer-box.fullscreen .canvas-container {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+#redactor-drawer-box.animation.fullscreen,
+#redactor-drawer-box.fullscreen-in-progress {
+    transition: none !important;
+}
+
+#redactor-drawer-box.fullscreen-in-progress .toolbars-wrapper {
+    opacity: 0 !important;
+}

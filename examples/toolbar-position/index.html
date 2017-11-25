@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script src="../../lib/jquery-1.10.1.min.js"></script>
+    <script src="../../lib/jquery-migrate-1.2.1.min.js"></script>
+
+    <link rel="stylesheet" href="/assets/bootstrap.min.css"/>
+    <link href="/assets/font-awesome.min.css" rel="stylesheet">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+
+    <link rel="stylesheet" href="../../dist/drawerJs.css"/>
+    <script src="../../dist/drawerJs.standalone.js"></script>
+    <style type="text/css">
+        .toolbars-config {
+            margin-bottom: 50px;
+            display: inline-block;
+            font-size: 16px;
+        }
+
+        .toolbars-config hr {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        .config-toolbar-item-wrapper {
+            position: relative;
+        }
+
+        .config-toolbar-item {
+            position: relative;
+            padding-right: 20px;
+        }
+
+        .config-toolbar-item-wrapper label {
+            font-weight:normal;
+            margin: 0;
+        }
+
+        .config-table td {
+            padding: 10px 5px;
+        }
+
+        .config-table thead td {
+            text-align: center;
+            padding: 10px 5px 0;
+        }
+
+        .config-table-row.config-table-row-position {
+            width: 130px;
+        }
+
+        .config-table tbody select {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .config-table tbody .toolbar-item:not(.toolbar-item-fullscreen):not(:first-child) {
+            border-top: 1px solid #eee;
+        }
+
+        .config-table tbody td:not(:first-child) {
+            border-left: 1px solid #eee;
+        }
+
+        #canvas-editor {
+            position: relative;
+        }
+
+        .dummy-content {
+            font-size: 20px; font-weight:600; padding-top: 300px; padding-left: 550px;
+        }
+
+        #custom-toolbar-here {
+            position: absolute;
+            top: 0;
+            left: 600px;
+            width: 370px;
+            height: 38px;
+            border-top: solid 1px #ddd
+        }
+
+        #custom-toolbar-tooltip {
+            position:absolute; top:-1.4em;color:#777
+        }
+
+        .checkbox-col {
+            text-align: center;
+        }
+
+        .config-table .name-col {
+            white-space: nowrap;
+            font-weight: bold;
+            padding-left: 0;
+        }
+
+        .toolbar-item-fullscreen .name-col {
+            font-size: 12px;
+            text-align: right;
+            font-weight: normal;
+        }
+
+        .config-table .toolbar-item-fullscreen td {
+            padding-top: 0;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <div class="panel panel-default">
+        <div class="panel-heading"><h3>DrawerJs standalone toolbar positioning demo page</h3></div>
+        <div class="panel-body">
+            <div class="toolbars-config-wrapper">
+                <div class="toolbars-config">
+
+                    <table class="config-table">
+                        <thead>
+                        <tr>
+                            <td></td>
+                            <td class="config-table-row config-table-row-position">Position</td>
+                            <td class="config-table-row config-table-row-position-type">Outside/inside</td>
+                            <td class="config-table-row config-table-row-compact">Compact type</td>
+                            <td class="config-table-row config-table-row-hidden">Hidden</td>
+                            <td class="config-table-row config-table-row-togglable">Toggleable</td>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr class="toolbar-item" data-toolbar-name="drawingTools">
+                            <td class="name-col">"Drawing Tools"</td>
+                            <td>
+                                <select name="position">
+                                    <option value="left">left</option>
+                                    <option value="top" selected>top</option>
+                                    <option value="right">right</option>
+                                    <option value="bottom">bottom</option>
+                                    <option value="custom">custom anchor</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="positionType">
+                                    <option value="outside" selected>outside</option>
+                                    <option value="inside">inside</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="compactType">
+                                    <option value="multiple">multiple</option>
+                                    <option value="scrollable" selected>scrollable</option>
+                                    <!--<option value="popup">popup</option>-->
+                                </select>
+                            </td>
+                            <td class="checkbox-col">
+                                <input type="checkbox" name="hidden">
+                            </td>
+                            <td class="checkbox-col">
+                                <input type="checkbox" name="toggleVisibilityButton">
+                            </td>
+                        </tr>
+                        <tr class="toolbar-item toolbar-item-fullscreen"
+                            data-toolbar-name="drawingTools"
+                            data-for-fullscreen>
+                            <td class="name-col">Fullscreen mode</td>
+                            <td>
+                                <select name="position">
+                                    <option value="left">left</option>
+                                    <option value="top" selected>top</option>
+                                    <option value="right">right</option>
+                                    <option value="bottom">bottom</option>
+                                    <option value="custom">custom anchor</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select disabled name="positionType">
+                                    <option value="outside">outside</option>
+                                    <option value="inside" selected>inside</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="compactType">
+                                    <option value="multiple">multiple</option>
+                                    <option value="scrollable" selected>scrollable</option>
+                                </select>
+                            </td>
+                            <td class="checkbox-col">
+                                <input type="checkbox" name="hidden">
+                            </td>
+                            <td class="checkbox-col">
+                                <input type="checkbox" name="toggleVisibilityButton">
+                            </td>
+                        </tr>
+
+                        <tr class="toolbar-item" data-toolbar-name="toolOptions">
+                            <td class="name-col">"Tool options"</td>
+                            <td>
+                                <select name="position">
+                                    <!--<option value="left">left</option>-->
+                                    <option value="top">top</option>
+                                    <!--<option value="right">right</option>-->
+                                    <option value="bottom" selected>bottom</option>
+                                    <option value="custom">custom anchor</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="positionType">
+                                    <option value="outside" selected>outside</option>
+                                    <option value="inside" >inside</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="compactType">
+                                    <option value="multiple" >multiple</option>
+                                    <option value="scrollable" selected>scrollable</option>
+                                    <option value="popup">popup</option>
+                                </select>
+                            </td>
+                            <td class="checkbox-col">
+                                <input type="checkbox" name="hidden">
+                            </td>
+                            <td class="checkbox-col">
+                                <input type="checkbox" name="toggleVisibilityButton">
+                            </td>
+                        </tr>
+                        <tr class="toolbar-item toolbar-item-fullscreen"
+                            data-toolbar-name="toolOptions"
+                            data-for-fullscreen>
+                            <td class="name-col">Fullscreen mode</td>
+                            <td>
+                                <select name="position">
+                                    <option value="left">left</option>
+                                    <option value="top" selected>top</option>
+                                    <option value="right">right</option>
+                                    <option value="bottom" selected>bottom</option>
+                                    <option value="custom">custom anchor</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select disabled name="positionType">
+                                    <option value="outside">outside</option>
+                                    <option value="inside" selected>inside</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="compactType">
+                                    <option value="multiple" selected>multiple</option>
+                                    <!--<option value="scrollable" selected>scrollable</option>-->
+                                    <option value="popup">popup</option>
+                                </select>
+                            </td>
+                            <td class="checkbox-col">
+                                <input type="checkbox" name="hidden">
+                            </td>
+                            <td class="checkbox-col">
+                                <input type="checkbox" name="toggleVisibilityButton">
+                            </td>
+                        </tr>
+
+                        <tr class="toolbar-item" data-toolbar-name="settings">
+                            <td class="name-col">"Drawer Toolbar"</td>
+                            <td>
+                                <select name="position">
+                                    <option value="left">left</option>
+                                    <option value="top">top</option>
+                                    <option value="right" selected>right</option>
+                                    <option value="bottom">bottom</option>
+                                    <option value="custom">custom anchor</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="positionType">
+                                    <option value="outside" selected>outside</option>
+                                    <option value="inside">inside</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="compactType">
+                                    <option value="multiple">multiple</option>
+                                    <option value="scrollable" selected>scrollable</option>
+                                    <!--<option value="popup">popup</option>-->
+                                </select>
+                            </td>
+                            <td class="checkbox-col">
+                                <input type="checkbox" name="hidden">
+                            </td>
+                            <td class="checkbox-col">
+                                <input type="checkbox" name="toggleVisibilityButton">
+                            </td>
+                        </tr>
+                        <tr class="toolbar-item toolbar-item-fullscreen"
+                            data-toolbar-name="settings"
+                            data-for-fullscreen>
+                            <td class="name-col">Fullscreen mode</td>
+                            <td>
+                                <select name="position">
+                                    <option value="left">left</option>
+                                    <option value="top">top</option>
+                                    <option value="right" selected>right</option>
+                                    <option value="bottom">bottom</option>
+                                    <option value="custom">custom anchor</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select disabled name="positionType">
+                                    <option value="outside">outside</option>
+                                    <option value="inside" selected>inside</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="compactType">
+                                    <option value="multiple">multiple</option>
+                                    <option value="scrollable" selected>scrollable</option>
+                                </select>
+                            </td>
+                            <td class="checkbox-col">
+                                <input type="checkbox" name="hidden">
+                            </td>
+                            <td class="checkbox-col">
+                                <input type="checkbox" name="toggleVisibilityButton">
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="canvas-editor">
+                <p class="dummy-content">
+                    here goes some dummy content
+                </p>
+                <div id="custom-toolbar-here">
+                    <div id="custom-toolbar-tooltip">
+                        Toolbar custom positioning (anchor div):
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script>
+    var localization_ru =  {
+        'Add Drawer': 'Добавить холст для рисования',
+        'Insert Drawer': 'Добавить холст',
+        'Insert': 'Добавить',
+        'Free drawing mode': 'Карандаш',
+        'SimpleWhiteEraser': 'Ластик (белый)',
+        'Eraser': 'Ластик',
+        'Delete this canvas': 'Удалить полотно',
+        'Are you sure want to delete this canvas?': 'Вы уверены что хотите удалить полотно?',
+
+
+        // canvas properties popup
+        'Size (px)': 'Размер (px)',
+        'Position': 'Позиция',
+        'Inline': 'На линии',
+        'Left': 'Слева',
+        'Center': 'По центру',
+        'Right': 'Справа',
+        'Floating': 'Плавающий',
+        'Canvas properties': 'Свойства холста',
+        'Background': 'Фон',
+        'transparent': 'прозрачный',
+        'Cancel': 'Отмена',
+        'Save': 'Сохранить',
+
+        // Fullscreen plugin
+        'Enter fullscreen mode': 'Полноэкранный режим',
+        'Exit fullscreen mode': 'Выйти из полноэкранного режима',
+
+        // shape context menu plugin
+        'Bring forward': 'Переместить выше',
+        'Send backwards': 'Переместить ниже',
+        'Bring to front': 'Переместить наверх',
+        'Send to back': 'Переместить в низ',
+        'Duplicate': 'Клонировать',
+        'Remove': 'Удалить',
+
+        // brush size plugin
+        'Size:': 'Размер:',
+
+        // color plugin
+        'Fill:': 'Заливка:',
+        'Transparent': 'Прозрачный',
+        'None': 'Нет',
+
+        // shape border plugin
+        'Border:': 'Граница:',
+
+        // arrow plugin
+        'Draw an arrow': 'Стрелка',
+        'Draw a two-sided arrow': 'Двухсторонняя стрелка',
+        'Lines and arrows': 'Линии и стрелки',
+
+        // circle plugin
+        'Draw a circle': 'Круг',
+
+        // line plugin
+        'Draw a line': 'Линия',
+
+        // rectangle plugin
+        'Draw a rectangle': 'Прямоугольник',
+
+        // triangle plugin
+        'Draw a triangle': 'Треугольник',
+
+        // polygon plugin
+        'Draw a Polygon': 'Многоугольник',
+        'Stop drawing a polygon': 'Закончить рисование многоугольника (esc)',
+        'Click to start a new line': 'Кликните для начала новой линии',
+
+        // text plugin
+        'Draw a text': 'Текст',
+        'Click to place a text': 'Нажмите, чтобы расположить текст',
+        'Font:': 'Шрифт:',
+
+        // movable floating mode plugin
+        'Move canvas': 'Подвинуть холст',
+
+        // base shape
+        'Click to start drawing a ': 'Нажмите, чтобы начать рисовать ',
+
+        // image tool
+        'Insert an image'          : 'Вставить изображение',
+        'No file was selected!'    : 'Не был выбран файл!',
+        'Incorrect file type'      : 'Неверный тип файла!',
+        'File is to big!. Maximum file size is '   : 'Файл слишком большой! Максимальный размер файла - ',
+        'Image failed to create!'  : 'Не удалось создать изображение!',
+
+        // background image tool
+        'Insert a background image': 'Фоновое изображение'
+    };
+
+    $(document).ready(function () {
+        var drawerPlugins = [
+            // Drawing tools
+            'Pencil',
+            'Eraser',
+            'Text',
+            'Line',
+            'ArrowOneSide',
+            'ArrowTwoSide',
+            'Triangle',
+            'Rectangle',
+            'Circle',
+            'Image',
+            'BackgroundImage',
+            'Polygon',
+
+            // Drawing options
+            //'ColorHtml5',
+            'Color',
+            'ShapeBorder',
+            'BrushSize',
+            'OpacityOption',
+            'LineWidth',
+            'StrokeWidth',
+
+            'Resize',
+            'ShapeContextMenu',
+            'CloseButton',
+            'OvercanvasPopup',
+            'OpenPopupButton',
+            'MinimizeButton',
+            'ToggleVisibilityButton',
+            'MovableFloatingMode',
+            'FullscreenModeButton',
+
+            'TextLineHeight',
+            'TextAlign',
+
+            'TextFontFamily',
+            'TextFontSize',
+            'TextFontWeight',
+            'TextFontStyle',
+            'TextDecoration',
+            'TextColor',
+            'TextBackgroundColor'
+        ];
+
+        // drawer is created as global property solely for debug purposes.
+        // doing  in production is considered as bad practice
+        window.drawer = new DrawerJs.Drawer(null, {
+            //texts: localization_ru,
+            plugins: drawerPlugins,
+			pluginsConfig: {
+				Image: {
+					scaleDownLargeImage: true,
+					maxImageSizeKb: 1024 //1MB
+				},
+				BackgroundImage: {
+				    scaleDownLargeImage: true,
+					maxImageSizeKb: 1024, //1MB
+					imagePosition: 'stretch',  // one of  'center', 'stretch', 'top-left', 'top-right', 'bottom-left', 'bottom-right'
+		        	acceptedMIMETypes: ['image/jpeg', 'image/png', 'image/gif'] ,
+                    dynamicRepositionImage: true,
+                    dynamicRepositionImageThrottle: 100
+				}
+			},
+
+            toolbars: {
+                // drawing tools toolbar config
+                drawingTools : {
+                    position : 'top',         // one of [left, right, top, bottom, custom]
+                    customAnchorSelector : '#custom-toolbar-here',  // custom anchor for toolbar
+                    compactType : 'scrollable',        // one of [scrollable, multiline]
+                    fullscreenMode: {
+                      positionType: 'inside'
+                    }
+                },
+
+                // active tool options toolbar config
+                toolOptions : {
+                    position : 'bottom', // one of [left, right, top, bottom]
+                    fullscreenMode: {
+                      compactType: 'popup'
+                    }
+                },
+
+                // drawer settings toolbar config
+                settings : {
+                    position : 'right',       // one of [left, right, top, bottom]
+                    fullscreenMode: {
+                      hidden: true
+                    }
+                },
+            },
+
+
+            defaultImageUrl: '/examples/redactor/images/drawer.jpg',
+            defaultActivePlugin : { name : 'Pencil', mode : 'lastUsed'},
+            debug: true,
+			transparentBackground: true,
+			align: 'floating'  //one of 'left', 'right', 'center', 'inline', 'floating'
+        }, 400, 400);
+
+        $('#canvas-editor').append(window.drawer.getHtml());
+
+        $('body').off('change.setConfigValue').on('change.setConfigValue', '.toolbar-item select', collectData);
+        $('body').off('click.setConfigValue').on('click.setConfigValue', 'input', collectData);
+        collectData();
+        window.drawer.onInsert();
+    });
+
+    /**
+     * Collect data for drawer from table
+     */
+    function collectData() {
+      var toolbars = $('.toolbar-item');
+
+      toolbars.each(function(i, toolbar){
+        var $toolbar = $(toolbar),
+            toolbarData = $toolbar.data(),
+            toolbarName = toolbarData.toolbarName,
+            isForFullscreen = toolbarData.forFullscreen !== undefined,
+            $selects = $toolbar.find('select'),
+            $checkboxes = $toolbar.find('input[type=checkbox]'),
+            collectedData = $selects.serializeArray(),
+            currDrawerConfig;
+
+
+        $checkboxes.each(function(i, checkbox){
+          collectedData.push({
+            name: checkbox.name,
+            value: checkbox.checked
+          });
+        });
+
+        window.drawer.options.toolbars[toolbarName] = window.drawer.options.toolbars[toolbarName] || {};
+        currDrawerConfig = window.drawer.options.toolbars[toolbarName];
+
+        collectedData.forEach(function(obj, i){
+          if (!isForFullscreen) {
+            currDrawerConfig[obj.name] = obj.value;
+          } else {
+            currDrawerConfig['fullscreenMode'] = currDrawerConfig['fullscreenMode'] || {};
+            currDrawerConfig['fullscreenMode'][obj.name] = obj.value;
+          }
+        });
+
+        if (currDrawerConfig.position === 'custom') {
+          currDrawerConfig.customAnchorSelector = '#custom-toolbar-here';
+        } else {
+          delete currDrawerConfig.customAnchorSelector;
+        }
+
+        if (currDrawerConfig.fullscreenMode.position === 'custom') {
+          currDrawerConfig.fullscreenMode.customAnchorSelector = '#custom-toolbar-here';
+        } else {
+          delete currDrawerConfig.fullscreenMode.customAnchorSelector;
+        }
+      });
+    }
+
+</script>
+</body>
+</html>
