@@ -9,8 +9,8 @@ node_modules
 dist
 drawerJs.v12.suo
 obj/Release/DrawerJs.njsprojResolveAssemblyReference.cache
-fonts/
-assets/
+
+
 
 .jshintrc
 .editorconfig
