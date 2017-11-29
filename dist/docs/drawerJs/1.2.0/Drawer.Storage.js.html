@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Drawer.Storage.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Drawer.Storage.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function  (Drawer, util) {
+
+  /**
+   * Returns canvas data(information about all objects presented on canvas).
+   *
+   * The order of sources is following:
+   * - fabricjs canvas instance(if available) toJSON method.
+   * - options.contentConfig.loadCanvasData(if available)
+   * - options.contentCOnfig.canvasDataContainer(if available)
+   * - data-canvas-serialized attribute
+   *   (if options.contentConfig.saveToHtml=true)
+   *
+   * @return {Object} serialized canvas data
+   */
+  Drawer.prototype.getCanvasData = function () {
+    var serializedCanvas = null;
+
+    if (this.fCanvas) {
+      serializedCanvas = this.fCanvas.toJSON();
+    } else if (this.options.contentConfig.loadCanvasData) {
+      serializedCanvas = this.options.contentConfig.loadCanvasData(this.id);
+    } else if (this.$canvasDataContainer) {
+      var canvasDataText = this.$canvasDataContainer.text();
+      if (canvasDataText) {
+        serializedCanvas = JSON.parse(canvasDataText)[this.id];
+      }
+    }
+    else {
+      var attr = this.$imageElement.attr('data-canvas-serialized');
+      if (attr) {
+        serializedCanvas = JSON.parse(attr);
+      }
+    }
+
+    return serializedCanvas;
+  };
+
+
+  /**
+   * Returns data-url with image encoded to base64
+   *
+   * Firstly this method will try to get image data from fabric canvas instance.
+   * If that is not available (for example when in edit mode)
+   * it will check options for loadImageData function. If it is specified,
+   * it will be invoked with this.id argument.
+   *
+   * If options.contentConfig.loadImageData is not set,
+   * options.contentConfig.imagesContainer will be checked for data.
+   *
+   * @returns {String} image data encoded in base64/png.
+   */
+  Drawer.prototype.getImageData = function () {
+    if (this.fCanvas) {
+      this.imageData = this.fCanvas.toDataURL();
+    } else if (this.options.contentConfig.loadImageData) {
+      this.imageData = this.options.contentConfig.loadImageData(this.id);
+      if (this.imageData[0] == '"' &amp;&amp;
+        this.imageData[this.imageData.length - 1] == '"') {
+        this.imageData = this.imageData.substr(1, this.imageData.length - 2);
+      }
+    } else if (this.$imagesContainer) {
+      var imagesDataText = this.$imagesContainer.text();
+      if (imagesDataText) {
+        var imagesData = JSON.parse(imagesDataText);
+        this.imageData = imagesData[this.id];
+      }
+    }
+
+    return this.imageData;
+  };
+
+
+
+
+  /**
+   * Loads canvas from serialized data.
+   * Triggers EVENT_LOADED_FROM_JSON on complete.
+   */
+  Drawer.prototype.loadCanvas = function (serializedCanvas) {
+    var _this = this;
+    if (serializedCanvas) {
+      this.fCanvas.loadFromJSON(serializedCanvas, function() {
+        // now when we load everything we should adjust object's properties
+        // for selection controls based on our config
+        var allObjects = _this.fCanvas.getObjects();
+        for (var o in allObjects) {
+          _this._updateObjectsControls(allObjects[o]);
+        }
+
+        // set mode to ACTIVE and trigger event
+        _this.mode = _this.MODE_ACTIVE;
+        _this.trigger(_this.EVENT_LOADED_FROM_JSON);
+
+        _this.fCanvas.renderAll();
+        _this.onCanvasLoaded();
+      });
+    } else {
+      // yes, we have not set all listeners, and better place for this
+      // is in the end of startEditing(), but it does not affect anything,
+      // so I let it here
+      _this.mode = this.MODE_ACTIVE;
+      _this.onCanvasLoaded();
+    }
+  };
+
+
+  Drawer.prototype.onCanvasLoaded = function () {
+    var _this = this;
+    // subscribe to events only after deserialization to avoid triggering
+    // for all objects while loading
+    this.fCanvas.on('object:added', function (fEvent) {
+      _this._updateObjectsControls(fEvent.target);
+      _this.trigger(_this.EVENT_OBJECT_ADDED, fEvent);
+      _this.onCanvasModified();
+    });
+    this.fCanvas.on('object:moving', function (fEvent) {
+      _this.trigger(_this.EVENT_OBJECT_MOVING, fEvent);
+    });
+    this.fCanvas.on('object:modified', function () {
+      _this.onCanvasModified();
+    });
+    this.fCanvas.on('before:render', function (fEvent) {
+      _this.trigger(_this.EVENT_BEFORE_RENDER, fEvent);
+    });
+    this.fCanvas.on('after:render', function (fEvent) {
+      _this.trigger(_this.EVENT_AFTER_RENDER, fEvent);
+    });
+    this.fCanvas.on('canvas:zoom:lower:set', function (fEvent) {
+      _this.trigger(_this.EVENT_ZOOM_SET, fEvent);
+    });
+    this.fCanvas.on('canvas:zoom:lower:restore', function (fEvent) {
+      _this.trigger(_this.EVENT_ZOOM_RESTORE, fEvent);
+    });
+    this.fCanvas.on('canvas:zoom:upper:set', function (fEvent) {
+      _this.trigger(_this.EVENT_ZOOM_UPPER_SET, fEvent);
+    });
+    this.fCanvas.on('canvas:zoom:upper:restore', function (fEvent) {
+      _this.trigger(_this.EVENT_ZOOM_UPPER_RESTORE, fEvent);
+    });
+    this.fCanvas.on('pencil:move:before', function (fEvent) {
+      _this.trigger(_this.EVENT_ZOOM_UPPER_SET, fEvent);
+    });
+    this.fCanvas.on('pencil:move:after', function (fEvent) {
+      _this.trigger(_this.EVENT_ZOOM_UPPER_RESTORE, fEvent);
+    });
+
+
+    this.fCanvas.on('object:removed', function () {
+      _this.onCanvasModified();
+    });
+    this.fCanvas.on('object:selected', function (fEvent) {
+      _this.trigger(_this.EVENT_OBJECT_SELECTED, fEvent);
+    });
+    this.fCanvas.on('selection:cleared', function (fEvent) {
+      _this.trigger(_this.EVENT_SELECTION_CLEARED, fEvent);
+    });
+    this.fCanvas.on('text:selection:changed', function (fEvent) {
+      _this.trigger(_this.EVENT_TEXT_SELECTION_CHANGED, fEvent);
+    });
+    this.fCanvas.on('text:editing:entered', function (fEvent) {
+      _this.trigger(_this.EVENT_TEXT_EDITING_ENTERED, fEvent);
+    });
+    this.fCanvas.on('text:editing:exited', function (fEvent) {
+      _this.trigger(_this.EVENT_TEXT_EDITING_EXITED, fEvent);
+    });
+
+    // restore brush and color settings
+    this.setColor();
+    // this.setBrushSize();
+
+    // create all toolbars. Toolbars must be created after fCanvas is initialized.
+    this.toolbars.createAllToolbars();
+
+    // give upper-canvas some id to properly handle clicks inside it
+    $(this.fCanvas.upperCanvasEl).attr('data-id', 1);
+
+    this.setSize(this.width, this.height);
+
+    this.$canvasEditContainer.on('contextmenu', function (event) {
+      // disable context menu in drawer for any other plugins, but trigger an
+      // event for all drawer-plugins to handle
+      _this.trigger(_this.EVENT_CONTEXTMENU, [event]);
+      return false;
+    });
+
+    util.bindLongPress(this.$canvasEditContainer, 'canvasEdit',
+        function (event) {
+          _this.trigger(_this.EVENT_CONTEXTMENU, [event]);
+        });
+
+    this.trigger(this.EVENT_EDIT_START);
+
+    this.$canvasEditContainer.on('keydown', '.canvas-container', function (event) {
+      _this.trigger(_this.EVENT_KEYDOWN, event);
+
+      var isDelKey = event.which == 8,
+          isBackspaceKey = event.which == 46,
+          removeKeyTriggered = isDelKey || isBackspaceKey,
+          needToDeleteActiveObj = removeKeyTriggered;
+
+      if (needToDeleteActiveObj) {
+        _this.fCanvas.renderOnAddRemove = false;
+        var activeObject = _this.fCanvas.getActiveObject();
+        if (activeObject) {
+          activeObject.remove();
+
+          event.preventDefault();
+          event.stopPropagation();
+        }
+
+        var activeGroup = _this.fCanvas.getActiveGroup();
+        if (activeGroup) {
+          activeGroup.getObjects().map(function (canvasObject) {
+            canvasObject.remove();
+          });
+
+          _this.fCanvas.discardActiveGroup();
+
+          event.preventDefault();
+          event.stopPropagation();
+        }
+
+        _this.fCanvas.renderAll();
+        _this.fCanvas.renderOnAddRemove = true;
+
+        return false;
+      }
+    });
+
+    this.trigger(this.EVENT_CANVAS_READY);
+  };
+
+  Drawer.prototype.getSerializedCanvas = function () {
+    var serializedCanvas = this.fCanvas.toJSON();
+    var serializedCanvasStr = JSON.stringify(serializedCanvas, null, 2);
+    return serializedCanvasStr;
+  };
+
+
+  Drawer.prototype.beforeSync = function () {
+    // we do not want redactor to see image's data in its tag since it could be
+    // huge.
+    if (this.options.contentConfig &amp;&amp; !this.options.contentConfig.saveInHtml) {
+      this.$imageElement.attr('src', '');
+    }
+
+    if (this.fCanvas) {
+      this.beforeSyncActiveObject = this.fCanvas.getActiveObject();
+      this.beforeSyncActiveGroup = this.fCanvas.getActiveGroup();
+      this.fCanvas.deactivateAll();
+    }
+  };
+
+  Drawer.prototype.afterSync = function () {
+    if (this.beforeSyncActiveObject) {
+      this.fCanvas.setActiveObject(this.beforeSyncActiveObject);
+      delete this.beforeSyncActiveObject;
+    }
+
+    if (this.beforeSyncActiveGroup) {
+      this.fCanvas.setActiveGroup(this.beforeSyncActiveGroup);
+      delete this.beforeSyncActiveGroup;
+    }
+
+    if (this.options.contentConfig &amp;&amp; !this.options.contentConfig.saveInHtml) {
+      this.$imageElement.attr('src', this.getImageData());
+    }
+  };
+
+  /**
+   * Synchronizes canvas data with storages specified in options.contentConfig.
+   *
+   * @param deleteItself
+   */
+  Drawer.prototype.syncCanvasData = function (deleteItself) {
+    var _this = this;
+
+    if (!_this.fCanvas) {
+      return;
+    }
+
+    var serializedCanvasStr = this.getSerializedCanvas();
+
+    if (_this.$canvasDataContainer) {
+      var existingDataText = _this.$canvasDataContainer.text();
+      var existingData = {};
+      if (existingDataText.length > 0) {
+        existingData = JSON.parse(existingDataText);
+      }
+
+      if (!deleteItself) {
+        if (_this.fCanvas) {
+          existingData[_this.id] = serializedCanvasStr;
+        }
+      } else {
+        delete existingData[_this.id];
+      }
+
+      _this.$canvasDataContainer.text(JSON.stringify(existingData, null, 2));
+
+      _this.log('sync', 'sync with data container done.');
+    }
+
+    if (this.options.contentConfig.saveCanvasData) {
+      this.options.contentConfig.saveCanvasData(this.id, serializedCanvasStr);
+    }
+
+    if (this.options.contentConfig.saveInHtml) {
+      this.$imageElement.attr('data-canvas-serialized', serializedCanvasStr);
+    }
+  };
+
+
+  /**
+   * Synchronizes image data(base64/png) string with storages defined in
+   * options.contentConfig.
+   *
+   * @param deleteItself
+   */
+  Drawer.prototype.syncImageData = function (deleteItself) {
+    var _this = this;
+
+    var imageData = _this.getImageData();
+
+    if (_this.$imagesContainer) {
+
+      var existingDataText = _this.$imagesContainer.text();
+      var existingData = {};
+      if (existingDataText.length > 0) {
+        existingData = JSON.parse(existingDataText);
+      }
+
+      if (!deleteItself) {
+        existingData[_this.id] = imageData;
+      } else {
+        delete existingData[_this.id];
+      }
+
+      _this.$imagesContainer.text(JSON.stringify(existingData, null, 2));
+
+      _this.log('sync', 'sync with images container done.');
+    }
+
+    if (_this.options.contentConfig.saveImageData) {
+      _this.options.contentConfig.saveImageData(this.id, imageData);
+    }
+  };
+
+
+})(DrawerJs.Drawer, DrawerJs.util);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_anonymous_-fabric.ErasableImage.html">ErasableImage</a></li><li><a href="-_anonymous_-fabric.ErasableMixin.html">ErasableMixin</a></li><li><a href="-_anonymous_-fabric.ErasableText.html">ErasableText</a></li><li><a href="-_anonymous_-fabric.PText.html">PText</a></li><li><a href="CropImageToolbar.html">CropImageToolbar</a></li><li><a href="DrawerJs.brushes.EraserBrush.html">EraserBrush</a></li><li><a href="DrawerJs.Drawer.html">Drawer</a></li><li><a href="DrawerJs.DrawerApi.html">DrawerApi</a></li><li><a href="DrawerJs.namespace.Canvas.html">namespace.Canvas</a></li><li><a href="DrawerJs.options.LineWidth.html">LineWidth</a></li><li><a href="DrawerJs.options.OpacityOption.html">OpacityOption</a></li><li><a href="DrawerJs.options.StrokeWidth.html">StrokeWidth</a></li><li><a href="DrawerJs.plugins.ArrowOneSide.html">ArrowOneSide</a></li><li><a href="DrawerJs.plugins.ArrowTwoSide.html">ArrowTwoSide</a></li><li><a href="DrawerJs.plugins.BackgroundImageTool.html">BackgroundImageTool</a></li><li><a href="DrawerJs.plugins.BaseBrush.html">BaseBrush</a></li><li><a href="DrawerJs.plugins.BaseShape.html">BaseShape</a></li><li><a href="DrawerJs.plugins.BaseTextOptionTool.html">BaseTextOptionTool</a></li><li><a href="DrawerJs.plugins.BaseTool.html">BaseTool</a></li><li><a href="DrawerJs.plugins.BaseToolOptions.html">BaseToolOptions</a></li><li><a href="DrawerJs.plugins.BrushSize.html">BrushSize</a></li><li><a href="DrawerJs.plugins.CanvasProperties.html">CanvasProperties</a></li><li><a href="DrawerJs.plugins.Circle.html">Circle</a></li><li><a href="DrawerJs.plugins.CloseButton.html">CloseButton</a></li><li><a href="DrawerJs.plugins.ColorpickerControl.html">ColorpickerControl</a></li><li><a href="DrawerJs.plugins.ColorpickerHtml5.html">ColorpickerHtml5</a></li><li><a href="DrawerJs.plugins.ColorTool.html">ColorTool</a></li><li><a href="DrawerJs.plugins.Eraser.html">Eraser</a></li><li><a href="DrawerJs.plugins.Fullscreen.html">Fullscreen</a></li><li><a href="DrawerJs.plugins.FullscreenModeButton.html">FullscreenModeButton</a></li><li><a href="DrawerJs.plugins.ImageCrop.html">ImageCrop</a></li><li><a href="DrawerJs.plugins.ImageCropPlugin.html">ImageCropPlugin</a></li><li><a href="DrawerJs.plugins.ImageTool.html">ImageTool</a></li><li><a href="DrawerJs.plugins.Line.html">Line</a></li><li><a href="DrawerJs.plugins.MinimizeButton.html">MinimizeButton</a></li><li><a href="DrawerJs.plugins.MovableFloatingMode.html">MovableFloatingMode</a></li><li><a href="DrawerJs.plugins.OpacityControl.html">OpacityControl</a></li><li><a href="DrawerJs.plugins.OpenPopupButton.html">OpenPopupButton</a></li><li><a href="DrawerJs.plugins.OvercanvasPopup.html">OvercanvasPopup</a></li><li><a href="DrawerJs.plugins.Pencil.html">Pencil</a></li><li><a href="DrawerJs.plugins.Polygon.html">Polygon</a></li><li><a href="DrawerJs.plugins.Rectangle.html">Rectangle</a></li><li><a href="DrawerJs.plugins.ResizeTool.html">ResizeTool</a></li><li><a href="DrawerJs.plugins.ShapeBorder.html">ShapeBorder</a></li><li><a href="DrawerJs.plugins.ShapeContextMenu.html">ShapeContextMenu</a></li><li><a href="DrawerJs.plugins.SimpleWhiteEraser.html">SimpleWhiteEraser</a></li><li><a href="DrawerJs.plugins.Text.html">Text</a></li><li><a href="DrawerJs.plugins.TextAlign.html">TextAlign</a></li><li><a href="DrawerJs.plugins.TextBackgroundColor.html">TextBackgroundColor</a></li><li><a href="DrawerJs.plugins.TextColor.html">TextColor</a></li><li><a href="DrawerJs.plugins.TextDecoration.html">TextDecoration</a></li><li><a href="DrawerJs.plugins.TextFontFamily.html">TextFontFamily</a></li><li><a href="DrawerJs.plugins.TextFontSize.html">TextFontSize</a></li><li><a href="DrawerJs.plugins.TextFontStyle.html">TextFontStyle</a></li><li><a href="DrawerJs.plugins.TextFontWeight.html">TextFontWeight</a></li><li><a href="DrawerJs.plugins.TextLineHeight.html">TextLineHeight</a></li><li><a href="DrawerJs.plugins.ToggleVisibilityButton.html">ToggleVisibilityButton</a></li><li><a href="DrawerJs.plugins.Triangle.html">Triangle</a></li><li><a href="DrawerJs.plugins.Zoom.html">Zoom</a></li><li><a href="DrawerJs.plugins.ZoomViewport.html">ZoomViewport</a></li><li><a href="DrawerJs.utilPlugins.ToolbarComboBox.html">ToolbarComboBox</a></li><li><a href="DrawerJs.utilPlugins.Tooltip.html">Tooltip</a></li><li><a href="DrawerJs.utilPlugins.TooltipManager.html">TooltipManager</a></li><li><a href="DrawerToolbar.html">DrawerToolbar</a></li><li><a href="DrawerToolbarManager.html">DrawerToolbarManager</a></li><li><a href="DrawingToolsToolbar.html">DrawingToolsToolbar</a></li><li><a href="MinimizedToolbar.html">MinimizedToolbar</a></li><li><a href="OverCanvasToolbar.html">OverCanvasToolbar</a></li><li><a href="SettingsToolbar.html">SettingsToolbar</a></li><li><a href="ToolbarPlaceholder.html">ToolbarPlaceholder</a></li><li><a href="ToolOptionsToolbar.html">ToolOptionsToolbar</a></li></ul><h3>Namespaces</h3><ul><li><a href="DrawerJs.html">DrawerJs</a></li><li><a href="DrawerJs.brushes.html">brushes</a></li><li><a href="DrawerJs.options.html">options</a></li><li><a href="DrawerJs.plugins.html">plugins</a></li><li><a href="DrawerJs.util.html">util</a></li><li><a href="DrawerJs.utilPlugins.html">utilPlugins</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_iconClickHandler">_iconClickHandler</a></li><li><a href="global.html#complexity">complexity</a></li><li><a href="global.html#createPath">createPath</a></li><li><a href="global.html#getObjStyles">getObjStyles</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#initMouseupHandler">initMouseupHandler</a></li><li><a href="global.html#minX">minX</a></li><li><a href="global.html#minY">minY</a></li><li><a href="global.html#objectOptionsList">objectOptionsList</a></li><li><a href="global.html#onInput">onInput</a></li><li><a href="global.html#onMouseMove">onMouseMove</a></li><li><a href="global.html#onMouseUpSuperHandler">onMouseUpSuperHandler</a></li><li><a href="global.html#points">points</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#toObject">toObject</a></li><li><a href="global.html#toString">toString</a></li><li><a href="global.html#toSVG">toSVG</a></li><li><a href="global.html#type">type</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Sat Nov 25 2017 08:23:40 GMT+0100 (Mitteleuropäische Zeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

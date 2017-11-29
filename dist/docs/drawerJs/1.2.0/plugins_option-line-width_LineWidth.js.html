@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: plugins/option-line-width/LineWidth.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: plugins/option-line-width/LineWidth.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function ($, pluginsNamespace, BaseToolOptions, util) {
+  'use strict';
+
+  /**
+   * Provides input for changing width of line/arrow.
+   *
+   * @param {DrawerJs.Drawer} drawer
+   * Instance of {@link DrawerJs.Drawer}.
+   *
+   * @param {Object} [options] - Configuration object
+   * @param {Number} [options.digitsAfterDecimalPoint=0] - The number of digits to appear after the decimal point;
+   *
+   * @constructor
+   * @memberof DrawerJs.options
+   * @extends {DrawerJs.plugins.BaseToolOptions}
+   */
+  var LineWidth = function LineWidthConstructor(drawer, options) {
+    // call super c-tor
+    BaseToolOptions.call(this, drawer);
+    this._setupOptions(options);
+  };
+
+  LineWidth.prototype = Object.create(BaseToolOptions.prototype);
+  LineWidth.prototype.constructor = BaseToolOptions;
+
+  LineWidth.prototype.name = 'LineWidth';
+  LineWidth.prototype.optionName = 'lineWidth';
+  // LineWidth.prototype.useCombobox = true;
+  // LineWidth.prototype.buttonMode = true;
+  // LineWidth.prototype.preventHightlight = true;
+  LineWidth.prototype.useCombobox = false;
+  LineWidth.prototype.preventHightlight = false;
+  LineWidth.prototype.buttonMode = false;
+
+  LineWidth.prototype.buttonIconClass = 'fa-arrows-h';
+
+  LineWidth.prototype._defaultOptions = {
+    digitsAfterDecimalPoint: 0
+  };
+
+  LineWidth.prototype.onSelectionCleared = function (toolbar) {
+    this.data = false;
+  };
+
+  LineWidth.prototype.createControls = function (toolbar) {
+    this.createControl(toolbar);
+    this._attachEvents();
+  };
+
+  /**
+   * Get html of control
+   * @returns {string} result - html of controls
+   * @private
+   */
+  LineWidth.prototype._generateHtml = function () {
+    var result,
+        selectHtml;
+
+    selectHtml = '' +
+        '&lt;select ' +
+        'class="editable-canvas-line-width-input controls-value-item" ' +
+        'name="drawer-size"' +
+        'data-name="lineWidth"' +
+        '>' +
+        '&lt;/select>';
+
+    var optionItemDefaultClasses = 'toolbar-item-wrapper toolbar-item-range editable-canvas-line-width hidden',
+        optionItemAdditionalClasses = '' +
+            (this.buttonMode ? ' toolbar-button-item ' : '') +
+            (this.preventHightlight ? ' prevent-highlight ' : ''),
+        optionItemClasses = optionItemDefaultClasses + optionItemAdditionalClasses;
+
+    /*
+     // For button mode
+     result = '' +
+     '&lt;li class="' + optionItemClasses + '">' +
+     '&lt;div class="toolbar-item-description">' +
+     '&lt;span class="toolbar-item-label">' +
+     this.drawer.t('Line width:') + ' ' +
+     '&lt;/span>' +
+     '&lt;span class="toolbar-item-valueholder">&lt;/span>' +
+     '&lt;span class="toolbar-item-icon fa ' + this.buttonIconClass + '">&lt;/span>' +
+     '&lt;/div>' +
+     '&lt;div class="toolbar-dropdown-block collapsed">' +
+     selectHtml +
+     '&lt;/div>' +
+     '&lt;/li>';
+
+     */
+
+    result = '' +
+        '&lt;li class="' + optionItemClasses + '">' +
+          '&lt;div class="toolbar-item-description">' +
+            '&lt;span class="toolbar-label editable-canvas-line-width-label">' +
+              this.drawer.t('Line width:') + ' ' +
+            '&lt;/span>' +
+            '&lt;span class="toolbar-label toolbar-label-indicator editable-canvas-line-width-indicator">&lt;/span>' + '' +
+          '&lt;/div>' +
+          '&lt;input ' +
+            'class="editable-canvas-line-width-input controls-value-item" ' +
+            'name="drawer-line-width"' +
+            'data-name="lineWidth"' +
+            'type="range"' +
+            'min="1"' +
+            'max="1000"' +
+          '>' +
+        '&lt;/li>';
+    return result;
+  };
+
+  /**
+   * Create/add controls
+   * @param {DrawerToolbar} toolbar
+   * @returns {jQuery}
+   * @private
+   */
+  LineWidth.prototype.createControl = function (toolbar) {
+    var toolControlHtml = this._generateHtml();
+    this.$toolControl = $(toolControlHtml);
+    this.$valueIndicator = this.$toolControl.find('.editable-canvas-line-width-indicator');
+    toolbar.addControl(this.$toolControl, this.options.buttonOrder);
+    return this.$toolControl;
+  };
+
+  /**
+   * Attach events for control element
+   * @private
+   */
+  LineWidth.prototype._attachEvents = function () {
+    if (this.$toolControl) {
+      this.$toolControl.on('input change toolbarOptionChange', this.onInputChange.bind(this));
+    }
+  };
+
+
+  /**
+   * Validate width value
+   * @param rawValue
+   * @returns {*}
+   */
+  LineWidth.prototype.validateValue = function (rawValue) {
+    rawValue = parseInt(rawValue, 10);
+    var result,
+        rawValueIsValid = typeof rawValue === 'number' &amp;&amp; isFinite(rawValue) &amp;&amp; rawValue;
+    if (rawValueIsValid) {
+      var decimalRatio = Math.pow(10, this.options.digitsAfterDecimalPoint),
+          formattedValue = parseInt(rawValue * decimalRatio, 10) / decimalRatio;
+      result = formattedValue;
+    }
+    return result;
+  };
+
+  /**
+   * Set line width of current active object
+   * @param {number|string} value - Width of line/arrow in px
+   */
+  LineWidth.prototype.setLineWidth = function (value) {
+    var fCanvas = this.drawer.fCanvas,
+        target = fCanvas.getActiveObject();
+    if (target) {
+      if (!this.data) {
+        this.collectDataFromObject(target);
+      }
+
+      var diffRatio = parseInt(value / this.data.initialWidth * 100, 10) / 100;
+      
+      target.x1 = this.data.x1 * diffRatio * target.scaleX;
+      target.x2 = this.data.x2 *  diffRatio * target.scaleX;
+      target.y1 = this.data.y1 * diffRatio * target.scaleY;
+      target.y2 = this.data.y2 * diffRatio * target.scaleY;
+
+      target.set('x1',target.x1);
+      target.set('x2',target.x2);
+      target.set('y1',target.y1);
+      target.set('y2',target.y2);
+
+      target.set('top',this.data.top);
+      target.set('left',this.data.left);
+
+      fCanvas.renderAll();
+    }
+  };
+
+  /**
+   * This function is called every time user changes width via control
+   * @private
+   */
+  LineWidth.prototype.onInputChange = function () {
+    var $opacityInput = $(this.$toolControl).find('input'),
+        rawValue = $opacityInput.val(),
+        validatedValue = this.validateValue(rawValue);
+    this.$valueIndicator.text(validatedValue + 'px');
+    this.setLineWidth(validatedValue);
+  };
+
+  LineWidth.prototype.collectDataFromObject = function (target) {
+    var result = {},
+        decimalRatio = Math.pow(10, this.options.digitsAfterDecimalPoint),
+        calcWidth = function (x, y) {
+          var result,
+              axisSum = Math.pow(x, 2) + Math.pow(y, 2),
+              widthRaw = Math.sqrt(axisSum),
+              lineWidth = parseInt(widthRaw * decimalRatio) / decimalRatio;
+          result = lineWidth;
+          return result;
+        },
+        xDelta =target.x2 - target.x1,
+        yDelta =target.y2 - target.y1,
+        xDiffScaled = (xDelta) * target.scaleX,
+        yDiffScaled = (yDelta) * target.scaleY,
+        xDiff = (xDelta),
+        yDiff = (yDelta),
+        angleRad = Math.atan((yDelta) / (xDelta)),
+        angleDeg = Math.abs(fabric.util.radiansToDegrees(angleRad));
+
+    result.lineWidth = calcWidth(xDiffScaled, yDiffScaled);
+    result.initialWidth = calcWidth(xDiff, yDiff);
+    result.angleRad = angleRad;
+    result.angleDeg = angleDeg;
+
+    result.top = target.top;
+    result.left = target.left;
+    result.x1 = target.x1;
+    result.x2 = target.x2;
+    result.y1 = target.y1;
+    result.y2 = target.y2;
+
+    this.data = result;
+    return result;
+  };
+
+  LineWidth.prototype.updateControls = function (dataToFill) {
+    dataToFill = dataToFill || this.data;
+    var rawValue = dataToFill.lineWidth,
+        validatedValue = this.validateValue(rawValue);
+    this.$toolControl.find('input').val(validatedValue);
+    this.$valueIndicator.text(validatedValue + 'px');
+  };
+
+  LineWidth.prototype.showControls = function () {
+    this.$toolControl.removeClass('hidden');
+  };
+
+  LineWidth.prototype.hideControls = function (force) {
+    this.$toolControl.addClass('hidden');
+  };
+
+  pluginsNamespace.LineWidth = LineWidth;
+}(jQuery, DrawerJs.plugins, DrawerJs.plugins.BaseToolOptions, DrawerJs.util));</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_anonymous_-fabric.ErasableImage.html">ErasableImage</a></li><li><a href="-_anonymous_-fabric.ErasableMixin.html">ErasableMixin</a></li><li><a href="-_anonymous_-fabric.ErasableText.html">ErasableText</a></li><li><a href="-_anonymous_-fabric.PText.html">PText</a></li><li><a href="CropImageToolbar.html">CropImageToolbar</a></li><li><a href="DrawerJs.brushes.EraserBrush.html">EraserBrush</a></li><li><a href="DrawerJs.Drawer.html">Drawer</a></li><li><a href="DrawerJs.DrawerApi.html">DrawerApi</a></li><li><a href="DrawerJs.namespace.Canvas.html">namespace.Canvas</a></li><li><a href="DrawerJs.options.LineWidth.html">LineWidth</a></li><li><a href="DrawerJs.options.OpacityOption.html">OpacityOption</a></li><li><a href="DrawerJs.options.StrokeWidth.html">StrokeWidth</a></li><li><a href="DrawerJs.plugins.ArrowOneSide.html">ArrowOneSide</a></li><li><a href="DrawerJs.plugins.ArrowTwoSide.html">ArrowTwoSide</a></li><li><a href="DrawerJs.plugins.BackgroundImageTool.html">BackgroundImageTool</a></li><li><a href="DrawerJs.plugins.BaseBrush.html">BaseBrush</a></li><li><a href="DrawerJs.plugins.BaseShape.html">BaseShape</a></li><li><a href="DrawerJs.plugins.BaseTextOptionTool.html">BaseTextOptionTool</a></li><li><a href="DrawerJs.plugins.BaseTool.html">BaseTool</a></li><li><a href="DrawerJs.plugins.BaseToolOptions.html">BaseToolOptions</a></li><li><a href="DrawerJs.plugins.BrushSize.html">BrushSize</a></li><li><a href="DrawerJs.plugins.CanvasProperties.html">CanvasProperties</a></li><li><a href="DrawerJs.plugins.Circle.html">Circle</a></li><li><a href="DrawerJs.plugins.CloseButton.html">CloseButton</a></li><li><a href="DrawerJs.plugins.ColorpickerControl.html">ColorpickerControl</a></li><li><a href="DrawerJs.plugins.ColorpickerHtml5.html">ColorpickerHtml5</a></li><li><a href="DrawerJs.plugins.ColorTool.html">ColorTool</a></li><li><a href="DrawerJs.plugins.Eraser.html">Eraser</a></li><li><a href="DrawerJs.plugins.Fullscreen.html">Fullscreen</a></li><li><a href="DrawerJs.plugins.FullscreenModeButton.html">FullscreenModeButton</a></li><li><a href="DrawerJs.plugins.ImageCrop.html">ImageCrop</a></li><li><a href="DrawerJs.plugins.ImageCropPlugin.html">ImageCropPlugin</a></li><li><a href="DrawerJs.plugins.ImageTool.html">ImageTool</a></li><li><a href="DrawerJs.plugins.Line.html">Line</a></li><li><a href="DrawerJs.plugins.MinimizeButton.html">MinimizeButton</a></li><li><a href="DrawerJs.plugins.MovableFloatingMode.html">MovableFloatingMode</a></li><li><a href="DrawerJs.plugins.OpacityControl.html">OpacityControl</a></li><li><a href="DrawerJs.plugins.OpenPopupButton.html">OpenPopupButton</a></li><li><a href="DrawerJs.plugins.OvercanvasPopup.html">OvercanvasPopup</a></li><li><a href="DrawerJs.plugins.Pencil.html">Pencil</a></li><li><a href="DrawerJs.plugins.Polygon.html">Polygon</a></li><li><a href="DrawerJs.plugins.Rectangle.html">Rectangle</a></li><li><a href="DrawerJs.plugins.ResizeTool.html">ResizeTool</a></li><li><a href="DrawerJs.plugins.ShapeBorder.html">ShapeBorder</a></li><li><a href="DrawerJs.plugins.ShapeContextMenu.html">ShapeContextMenu</a></li><li><a href="DrawerJs.plugins.SimpleWhiteEraser.html">SimpleWhiteEraser</a></li><li><a href="DrawerJs.plugins.Text.html">Text</a></li><li><a href="DrawerJs.plugins.TextAlign.html">TextAlign</a></li><li><a href="DrawerJs.plugins.TextBackgroundColor.html">TextBackgroundColor</a></li><li><a href="DrawerJs.plugins.TextColor.html">TextColor</a></li><li><a href="DrawerJs.plugins.TextDecoration.html">TextDecoration</a></li><li><a href="DrawerJs.plugins.TextFontFamily.html">TextFontFamily</a></li><li><a href="DrawerJs.plugins.TextFontSize.html">TextFontSize</a></li><li><a href="DrawerJs.plugins.TextFontStyle.html">TextFontStyle</a></li><li><a href="DrawerJs.plugins.TextFontWeight.html">TextFontWeight</a></li><li><a href="DrawerJs.plugins.TextLineHeight.html">TextLineHeight</a></li><li><a href="DrawerJs.plugins.ToggleVisibilityButton.html">ToggleVisibilityButton</a></li><li><a href="DrawerJs.plugins.Triangle.html">Triangle</a></li><li><a href="DrawerJs.plugins.Zoom.html">Zoom</a></li><li><a href="DrawerJs.plugins.ZoomViewport.html">ZoomViewport</a></li><li><a href="DrawerJs.utilPlugins.ToolbarComboBox.html">ToolbarComboBox</a></li><li><a href="DrawerJs.utilPlugins.Tooltip.html">Tooltip</a></li><li><a href="DrawerJs.utilPlugins.TooltipManager.html">TooltipManager</a></li><li><a href="DrawerToolbar.html">DrawerToolbar</a></li><li><a href="DrawerToolbarManager.html">DrawerToolbarManager</a></li><li><a href="DrawingToolsToolbar.html">DrawingToolsToolbar</a></li><li><a href="MinimizedToolbar.html">MinimizedToolbar</a></li><li><a href="OverCanvasToolbar.html">OverCanvasToolbar</a></li><li><a href="SettingsToolbar.html">SettingsToolbar</a></li><li><a href="ToolbarPlaceholder.html">ToolbarPlaceholder</a></li><li><a href="ToolOptionsToolbar.html">ToolOptionsToolbar</a></li></ul><h3>Namespaces</h3><ul><li><a href="DrawerJs.html">DrawerJs</a></li><li><a href="DrawerJs.brushes.html">brushes</a></li><li><a href="DrawerJs.options.html">options</a></li><li><a href="DrawerJs.plugins.html">plugins</a></li><li><a href="DrawerJs.util.html">util</a></li><li><a href="DrawerJs.utilPlugins.html">utilPlugins</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_iconClickHandler">_iconClickHandler</a></li><li><a href="global.html#complexity">complexity</a></li><li><a href="global.html#createPath">createPath</a></li><li><a href="global.html#getObjStyles">getObjStyles</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#initMouseupHandler">initMouseupHandler</a></li><li><a href="global.html#minX">minX</a></li><li><a href="global.html#minY">minY</a></li><li><a href="global.html#objectOptionsList">objectOptionsList</a></li><li><a href="global.html#onInput">onInput</a></li><li><a href="global.html#onMouseMove">onMouseMove</a></li><li><a href="global.html#onMouseUpSuperHandler">onMouseUpSuperHandler</a></li><li><a href="global.html#points">points</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#toObject">toObject</a></li><li><a href="global.html#toString">toString</a></li><li><a href="global.html#toSVG">toSVG</a></li><li><a href="global.html#type">type</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Sat Nov 25 2017 08:23:40 GMT+0100 (Mitteleuropäische Zeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

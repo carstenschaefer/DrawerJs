@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: plugins/BaseOptionTool.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: plugins/BaseOptionTool.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function ($, pluginsNamespace) {
+    'use strict';
+
+    /**
+     * Base class for tool options plugins.
+     *
+     * @param drawer
+     * @constructor
+     * @memberof DrawerJs.plugins
+     */
+    var BaseToolOptions = function (drawer, options) {
+        if (!drawer) {
+            throw new Error("BaseToolOptions CTOR : drawer is not set!");
+        }
+        this.drawer = drawer;
+        this._setupOptions(options);
+
+        // handle toolbar created/destroyed
+        this._bindedOnToolbarCreated = this._onToolbarCreated.bind(this);
+        drawer.on(drawer.EVENT_OPTIONS_TOOLBAR_CREATED, this._bindedOnToolbarCreated);
+        drawer.on(drawer.EVENT_TOOLBAR_DESTROYED, this._onToolbarDestroyed.bind(this));
+
+        // handle tool activation/deactivation
+        drawer.on(drawer.EVENT_DO_DEACTIVATE_ALL_TOOLS, this._onDeactivateTool.bind(this));
+
+        drawer.on(drawer.EVENT_DO_DEACTIVATE_TOOL, this._onDeactivateTool.bind(this));
+        drawer.on(drawer.EVENT_DO_ACTIVATE_TOOL, this._onActivateTool.bind(this));
+
+        drawer.on(drawer.EVENT_TOOL_DEACTIVATED, this._onDeactivateTool.bind(this));
+        drawer.on(drawer.EVENT_TOOL_ACTIVATED, this._onActivateTool.bind(this));
+
+        // handle object selection/deselection
+        drawer.on(drawer.EVENT_OBJECT_SELECTED, this._onObjectSelected.bind(this));
+        drawer.on(drawer.EVENT_SELECTION_CLEARED, this._onSelectionCleared.bind(this));
+
+        // react on edit mode entering
+        drawer.on(drawer.EVENT_TEXT_EDITING_ENTERED, this._onTextEditingEntered.bind(this));
+        // react on edit mode exiting
+        drawer.on(drawer.EVENT_TEXT_EDITING_EXITED, this._onTextEditingExited.bind(this));
+    };
+
+  /**
+   * is active at the moment
+   * @type {boolean}
+   */
+  BaseToolOptions.prototype.active = false;
+
+  /** Instance of Drawer
+   * @type {Drawer} */
+  BaseToolOptions.prototype.drawer = null;
+
+  /** Instance of toolbar
+   * @type {DrawerToolbar} */
+  BaseToolOptions.prototype.toolbar = null;
+
+  /**
+   * Tool name
+   * @const
+   * @type {string}
+   */
+  BaseToolOptions.prototype.name = '';
+
+  /**
+   * Tool type
+   */
+  BaseToolOptions.prototype.type = null;
+
+  /**
+   * Tool name. On selecting tool/object, if this.optionName is in array of
+   * object allowed options - tool will show controls
+   * @const
+   * @type {String}
+   */
+  BaseToolOptions.prototype.optionName = '';
+
+  /**
+   * Css class of tool button
+   * @default
+   * @const
+   * @type {String}
+   */
+  BaseToolOptions.prototype.btnClass = 'btn';
+
+  /**
+   * Tool icon font-awesome class
+   * @const
+   * @type {String}
+   */
+  BaseToolOptions.prototype.faClass = '';
+
+  /**
+   * Show tool only in edit mode
+   * @default
+   * @const
+   * @type {boolean}
+   */
+  BaseToolOptions.prototype.showOnEditMode = false;
+
+  /**
+   * Hide tool in edit mode
+   * @default
+   * @const
+   * @type {boolean}
+   */
+  BaseToolOptions.prototype.hideOnEditMode = true;
+
+  /**
+   * Current option data
+   * @type {Object}
+   */
+  BaseToolOptions.prototype.data = {};
+
+  /**
+   * Setup data
+   * @param {Object} [options] - options to save
+   * @param {String} [pluginName] - name of plugin
+   * @param {Boolean} [doNotSave] - set true to not save result as this.options
+   * @returns {Object} config of plugin
+   */
+  BaseToolOptions.prototype._setupOptions = function (options, pluginName, doNotSave) {
+    options = options || {};
+    var optionsFromDrawer = this._collectDefaultOptions(pluginName),
+        result = $.extend(true,
+            {},
+            this._defaultOptions || {},
+            optionsFromDrawer || {},
+            options
+        );
+
+    var updatedResult = this._onOptionsSetup(this._defaultOptions, options, optionsFromDrawer, result);
+    result = updatedResult || result;
+    if (!doNotSave) {
+      this.options = result;
+    }
+    return result;
+  };
+
+  /**
+   * Process options
+   * @param {Object} [defaultOptions]
+   * @param {Object} [options]
+   * @param {Object} [optionsFromDrawer]
+   * @param {Object} [result]
+   * @returns {Object}
+   * @private
+   */
+  BaseToolOptions.prototype._onOptionsSetup = function (defaultOptions, options, optionsFromDrawer, result) {
+    return result;
+  };
+
+  /**
+   * Setup data
+   * @param {String} [pluginName] - name of plugin
+   * @returns {Object}
+   * @private
+   */
+  BaseToolOptions.prototype._collectDefaultOptions = function (pluginName) {
+    pluginName = pluginName || this.name || this.optionName;
+    var drawer = this.drawerInstance || this.drawer,
+        result = drawer &amp;&amp; drawer.getPluginConfig(pluginName);
+    return result;
+  };
+
+
+  /**
+   * On toolbar created - create tool button.
+   * @param {fabric.Event} ev
+   * @param {DrawerToolbar} toolbar
+   * @private
+   */
+    BaseToolOptions.prototype._onToolbarCreated = function (ev, toolbar) {
+        this.toolbar = toolbar;
+        if (this.createControls) {
+            this.createControls(toolbar);
+        }
+
+      if (this.useCombobox &amp;&amp; this.$toolControl) {
+        var comboBoxOptions = {
+          drawer: this.drawer,
+          editable: !this.onlyPredefined,
+          buttonMode: this.buttonMode
+        },
+        $targetSelect = this.$toolControl.find('select');
+        $targetSelect.ToolbarComboBox(comboBoxOptions);
+        this.comboBox = $targetSelect.getComboBox();
+      }
+    };
+
+
+  /**
+   * On toolbar destroyed - destroy button, if it was our toolbar.
+   * @param {fabric.Event} ev
+   * @param {DrawerToolbar} toolbar
+   * @private
+   */
+    BaseToolOptions.prototype._onToolbarDestroyed = function (ev, toolbar) {
+        if (this.toolbar == toolbar) {
+            this.removeTool();
+        }
+    };
+
+
+    /**
+     * Deletes tool button.
+     * If  doDeleteToolbarCreationListeners is true - removes listeners of toolbar creation event.
+     * So, tool will not appear on toolbar next time, when toolbar is created.
+     *
+     * @param {boolean} doDeleteToolbarCreationListeners
+     */
+    BaseToolOptions.prototype.removeTool = function(doDeleteToolbarCreationListeners) {
+        if (this.deleteControls) {
+            this.deleteControls();
+        }
+
+        // stop listening toolbar creation
+        if (doDeleteToolbarCreationListeners) {
+            this.drawer.off(this.drawer.EVENT_OPTIONS_TOOLBAR_CREATED, this._bindedOnToolbarCreated);
+        }
+    };
+
+  /**
+   * React on edit mode entering
+   * @param  {fabric.Event} [fEvent]
+   * @param  {fabric.Object} tool
+   * @private
+   */
+  BaseToolOptions.prototype._onTextEditingEntered = function (fEvent, tool) {
+    tool = tool &amp;&amp; tool.target;
+
+    var isEditMode = tool &amp;&amp; tool.isEditing,
+        showControls = !this.hideOnEditMode &amp;&amp; (this.showOnEditMode || isEditMode);
+    if (showControls) {
+      this.showControls(true, tool);
+    } else {
+      this.hideControls();
+    }
+  };
+
+  /**
+   * React on edit mode exiting
+   * @param  {fabric.Event} [fEvent]
+   * @param  {fabric.Object} [tool]
+   * @private
+   */
+  BaseToolOptions.prototype._onTextEditingExited = function (fEvent, tool) {
+    var isEditMode = tool &amp;&amp; tool.target &amp;&amp; tool.target.isEditing,
+        showControls = this.hideOnEditMode &amp;&amp; !isEditMode;
+    if (showControls) {
+      this.showControls();
+    } else {
+      this.hideControls();
+    }
+  };
+
+    /**
+     * Handler for EVENT_DO_DEACTIVATE_TOOL.
+     * Hides controls.
+     * Calls this.onDeactivateTool() if it is defined
+     *
+     * @param e event obj
+     * @param tool tool object
+     * @private
+     */
+    BaseToolOptions.prototype._onDeactivateTool = function (e, tool) {
+        // set active to false
+        this.active = false;
+        // hide controls
+      var needToShow = this.options &amp;&amp; this.options.alwaysVisible;
+      if (!needToShow) {
+        this.hideControls();
+      } else {
+        this.showControls();
+      }
+    };
+
+
+    /**
+     * Default handler for EVENT_DO_ACTIVATE_TOOL.
+     * Calls this.updateOnTool()
+     *
+     * @param {fabric.Event} e event obj
+     * @param {BaseTool} tool tool object
+     * @private
+     */
+    BaseToolOptions.prototype._onActivateTool = function (e, tool) {
+        this.updateOnTool(tool);
+    };
+
+
+    /**
+     * Shows/hides controls depending on tool.toolOptionsList
+     *
+     * @param {BaseTool} tool tool object
+     */
+    BaseToolOptions.prototype.updateOnTool = function (tool) {
+        // look if activated tool toolOptionsList has this option name
+      var toolHasOption = tool.toolOptionsList &amp;&amp; (tool.toolOptionsList.indexOf(this.optionName) !== -1),
+          editModeIsCorrect = (!this.showOnEditMode || tool.isEditing),
+          needToShowControls = toolHasOption &amp;&amp; editModeIsCorrect;
+        if (needToShowControls) {
+            this.active = true;
+            // show controls
+            this.showControls();
+            // and activate tool
+            if (this.onActivateTool) {
+                this.onActivateTool(tool);
+            }
+        } else {
+            this.active = false;
+            // show controls
+            this.hideControls(tool.forceOptionsHide);
+        }
+    };
+
+
+    /**
+     * Shows/hides controls, depending on selected object optionName
+     * @param  {Event} event
+     * @param  {fabric.Event} fabricEvent [description]
+     * @private
+     */
+    BaseToolOptions.prototype._onObjectSelected = function (event, fabricEvent) {
+      var target = fabricEvent.target,
+          toolHasOption = target.objectOptionsList &amp;&amp; (target.objectOptionsList.indexOf(this.optionName) !== -1),
+          editModeIsCorrect = (!this.showOnEditMode || target.isEditing),
+          needToShowControls = toolHasOption &amp;&amp; editModeIsCorrect;
+      if (needToShowControls) {
+            // show controls
+            this.showControls();
+            // update controls
+            this.updateControlsFromObject(target);
+        } else {
+            this.hideControls();
+        }
+    };
+
+    /**
+     * React on object deselect
+     * @private
+     */
+    BaseToolOptions.prototype.onSelectionCleared = function () {
+
+    };
+
+
+    /**
+     * On selection cleared - hide option controls if not tool is active.
+     * Else shows option controls for active tool.
+     * Calls this.onSelectionCleared if defined.
+     * @private
+     */
+    BaseToolOptions.prototype._onSelectionCleared = function () {
+        // if tool is active now - show controls for it. If no - hide  controls
+        if (this.drawer.activeDrawingTool) {
+            this.updateOnTool(this.drawer.activeDrawingTool);
+        } else {
+            this.hideControls();
+        }
+      this.onSelectionCleared();
+    };
+
+    /**
+     * Collect necessary data from object
+     * @param  {fabric.Object} target - fabric object
+     * @returns {object} result
+     */
+    BaseToolOptions.prototype.collectDataFromObject = function (target) {
+        var result = {};
+        return result;
+    };
+
+    /**
+     * Update controls with actual data
+     * @param {object} data
+     */
+    BaseToolOptions.prototype.updateControls = function (data) {
+    };
+
+    /**
+     * Collect and update controls with data from target object
+     * @param  {fabric.Object} target - fabric object
+     */
+    BaseToolOptions.prototype.updateControlsFromObject = function (target) {
+        this.collectDataFromObject(target);
+        this.updateControls(this.data);
+    };
+
+    /**
+     * This have to be redefined in child class
+     * @param {Boolean} [withUpdate] - need to update controls
+     * @param  {fabric.Object} [tool] - for styles collecting
+     */
+    BaseToolOptions.prototype.showControls = function (withUpdate, tool) {
+    };
+
+    /**
+     * This have to be redefined in child class
+     * @param {Boolean} [force] - force hide ignoring any options
+     */
+    BaseToolOptions.prototype.hideControls = function (force) {
+    };
+
+
+    pluginsNamespace.BaseToolOptions = BaseToolOptions;
+}(jQuery, DrawerJs.plugins));
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_anonymous_-fabric.ErasableImage.html">ErasableImage</a></li><li><a href="-_anonymous_-fabric.ErasableMixin.html">ErasableMixin</a></li><li><a href="-_anonymous_-fabric.ErasableText.html">ErasableText</a></li><li><a href="-_anonymous_-fabric.PText.html">PText</a></li><li><a href="CropImageToolbar.html">CropImageToolbar</a></li><li><a href="DrawerJs.brushes.EraserBrush.html">EraserBrush</a></li><li><a href="DrawerJs.Drawer.html">Drawer</a></li><li><a href="DrawerJs.DrawerApi.html">DrawerApi</a></li><li><a href="DrawerJs.namespace.Canvas.html">namespace.Canvas</a></li><li><a href="DrawerJs.options.LineWidth.html">LineWidth</a></li><li><a href="DrawerJs.options.OpacityOption.html">OpacityOption</a></li><li><a href="DrawerJs.options.StrokeWidth.html">StrokeWidth</a></li><li><a href="DrawerJs.plugins.ArrowOneSide.html">ArrowOneSide</a></li><li><a href="DrawerJs.plugins.ArrowTwoSide.html">ArrowTwoSide</a></li><li><a href="DrawerJs.plugins.BackgroundImageTool.html">BackgroundImageTool</a></li><li><a href="DrawerJs.plugins.BaseBrush.html">BaseBrush</a></li><li><a href="DrawerJs.plugins.BaseShape.html">BaseShape</a></li><li><a href="DrawerJs.plugins.BaseTextOptionTool.html">BaseTextOptionTool</a></li><li><a href="DrawerJs.plugins.BaseTool.html">BaseTool</a></li><li><a href="DrawerJs.plugins.BaseToolOptions.html">BaseToolOptions</a></li><li><a href="DrawerJs.plugins.BrushSize.html">BrushSize</a></li><li><a href="DrawerJs.plugins.CanvasProperties.html">CanvasProperties</a></li><li><a href="DrawerJs.plugins.Circle.html">Circle</a></li><li><a href="DrawerJs.plugins.CloseButton.html">CloseButton</a></li><li><a href="DrawerJs.plugins.ColorpickerControl.html">ColorpickerControl</a></li><li><a href="DrawerJs.plugins.ColorpickerHtml5.html">ColorpickerHtml5</a></li><li><a href="DrawerJs.plugins.ColorTool.html">ColorTool</a></li><li><a href="DrawerJs.plugins.Eraser.html">Eraser</a></li><li><a href="DrawerJs.plugins.Fullscreen.html">Fullscreen</a></li><li><a href="DrawerJs.plugins.FullscreenModeButton.html">FullscreenModeButton</a></li><li><a href="DrawerJs.plugins.ImageCrop.html">ImageCrop</a></li><li><a href="DrawerJs.plugins.ImageCropPlugin.html">ImageCropPlugin</a></li><li><a href="DrawerJs.plugins.ImageTool.html">ImageTool</a></li><li><a href="DrawerJs.plugins.Line.html">Line</a></li><li><a href="DrawerJs.plugins.MinimizeButton.html">MinimizeButton</a></li><li><a href="DrawerJs.plugins.MovableFloatingMode.html">MovableFloatingMode</a></li><li><a href="DrawerJs.plugins.OpacityControl.html">OpacityControl</a></li><li><a href="DrawerJs.plugins.OpenPopupButton.html">OpenPopupButton</a></li><li><a href="DrawerJs.plugins.OvercanvasPopup.html">OvercanvasPopup</a></li><li><a href="DrawerJs.plugins.Pencil.html">Pencil</a></li><li><a href="DrawerJs.plugins.Polygon.html">Polygon</a></li><li><a href="DrawerJs.plugins.Rectangle.html">Rectangle</a></li><li><a href="DrawerJs.plugins.ResizeTool.html">ResizeTool</a></li><li><a href="DrawerJs.plugins.ShapeBorder.html">ShapeBorder</a></li><li><a href="DrawerJs.plugins.ShapeContextMenu.html">ShapeContextMenu</a></li><li><a href="DrawerJs.plugins.SimpleWhiteEraser.html">SimpleWhiteEraser</a></li><li><a href="DrawerJs.plugins.Text.html">Text</a></li><li><a href="DrawerJs.plugins.TextAlign.html">TextAlign</a></li><li><a href="DrawerJs.plugins.TextBackgroundColor.html">TextBackgroundColor</a></li><li><a href="DrawerJs.plugins.TextColor.html">TextColor</a></li><li><a href="DrawerJs.plugins.TextDecoration.html">TextDecoration</a></li><li><a href="DrawerJs.plugins.TextFontFamily.html">TextFontFamily</a></li><li><a href="DrawerJs.plugins.TextFontSize.html">TextFontSize</a></li><li><a href="DrawerJs.plugins.TextFontStyle.html">TextFontStyle</a></li><li><a href="DrawerJs.plugins.TextFontWeight.html">TextFontWeight</a></li><li><a href="DrawerJs.plugins.TextLineHeight.html">TextLineHeight</a></li><li><a href="DrawerJs.plugins.ToggleVisibilityButton.html">ToggleVisibilityButton</a></li><li><a href="DrawerJs.plugins.Triangle.html">Triangle</a></li><li><a href="DrawerJs.plugins.Zoom.html">Zoom</a></li><li><a href="DrawerJs.plugins.ZoomViewport.html">ZoomViewport</a></li><li><a href="DrawerJs.utilPlugins.ToolbarComboBox.html">ToolbarComboBox</a></li><li><a href="DrawerJs.utilPlugins.Tooltip.html">Tooltip</a></li><li><a href="DrawerJs.utilPlugins.TooltipManager.html">TooltipManager</a></li><li><a href="DrawerToolbar.html">DrawerToolbar</a></li><li><a href="DrawerToolbarManager.html">DrawerToolbarManager</a></li><li><a href="DrawingToolsToolbar.html">DrawingToolsToolbar</a></li><li><a href="MinimizedToolbar.html">MinimizedToolbar</a></li><li><a href="OverCanvasToolbar.html">OverCanvasToolbar</a></li><li><a href="SettingsToolbar.html">SettingsToolbar</a></li><li><a href="ToolbarPlaceholder.html">ToolbarPlaceholder</a></li><li><a href="ToolOptionsToolbar.html">ToolOptionsToolbar</a></li></ul><h3>Namespaces</h3><ul><li><a href="DrawerJs.html">DrawerJs</a></li><li><a href="DrawerJs.brushes.html">brushes</a></li><li><a href="DrawerJs.options.html">options</a></li><li><a href="DrawerJs.plugins.html">plugins</a></li><li><a href="DrawerJs.util.html">util</a></li><li><a href="DrawerJs.utilPlugins.html">utilPlugins</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_iconClickHandler">_iconClickHandler</a></li><li><a href="global.html#complexity">complexity</a></li><li><a href="global.html#createPath">createPath</a></li><li><a href="global.html#getObjStyles">getObjStyles</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#initMouseupHandler">initMouseupHandler</a></li><li><a href="global.html#minX">minX</a></li><li><a href="global.html#minY">minY</a></li><li><a href="global.html#objectOptionsList">objectOptionsList</a></li><li><a href="global.html#onInput">onInput</a></li><li><a href="global.html#onMouseMove">onMouseMove</a></li><li><a href="global.html#onMouseUpSuperHandler">onMouseUpSuperHandler</a></li><li><a href="global.html#points">points</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#toObject">toObject</a></li><li><a href="global.html#toString">toString</a></li><li><a href="global.html#toSVG">toSVG</a></li><li><a href="global.html#type">type</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Sat Nov 25 2017 08:23:40 GMT+0100 (Mitteleuropäische Zeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

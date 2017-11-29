@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: plugins/feature-toggle-visiblity-button/ToggleVisibilityButton.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: plugins/feature-toggle-visiblity-button/ToggleVisibilityButton.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function ($, pluginsNamespace, util) {
+  "use strict";
+
+  var emptyFunc = function () {};
+
+  var MOUSE_UP = util.mouseUp('ToggleVisibilityButton');
+  var MOUSE_DOWN = util.mouseDown('ToggleVisibilityButton');
+  var MOUSE_MOVE = util.mouseMove('ToggleVisibilityButton');
+
+  /**
+   * Provides a button toggle toolbars visibility
+   *
+   * @param {Drawer} drawer - Instance of {@link Drawer}
+   * @param {Object} options
+   *
+   * @constructor
+   * @memberof DrawerJs.plugins
+   */
+  var ToggleVisibilityButton = function ToggleVisibilityButtonConstructor(drawer, options) {
+    /**
+     * @type {Drawer}
+     */
+    this.drawer = drawer;
+    this._setupOptions(options);
+    this.drawer.on(this.drawer.EVENT_FLOATING_TOOLBAR_CREATED, this._onToolbarCreated.bind(this));
+  };
+
+  /**
+   * Setup data
+   * @param {Object} [options] - options to save
+   * @param {String} [pluginName] - name of plugin
+   * @param {Boolean} [doNotSave] - set true to not save result as this.options
+   * @returns {Object} config of plugin
+   */
+  ToggleVisibilityButton.prototype._setupOptions = function (options, pluginName, doNotSave) {
+    pluginName = pluginName || this.name;
+    var drawer = this.drawerInstance || this.drawer,
+        optionsFromDrawer = drawer &amp;&amp; drawer.getPluginConfig(pluginName),
+        result = $.extend(true,
+            {},
+            this._defaultOptions || {},
+            optionsFromDrawer || {},
+            options || {}
+        );
+
+    if (!doNotSave) {
+      this.options = result;
+    }
+    return result;
+  };
+
+  /**
+   * React on overcanvas mode
+   * @private
+   */
+  ToggleVisibilityButton.prototype._onOverCanvasMode = function () {
+    this.showNextItem();
+    if (!this.positionInitialized) {
+      this._setInitialPosition();
+    }
+  };
+
+  /**
+   * On toolbar created - create tool button.
+   * @private
+   */
+  ToggleVisibilityButton.prototype._onToolbarCreated = function (ev, toolbar) {
+    this.toolbar = toolbar;
+
+    var needToInitButton = this.checkConfigForButton();
+    if (needToInitButton) {
+      this.createControls(toolbar);
+      this._onOverCanvasMode();
+    }
+  };
+
+  /**
+   *
+   * @param toolbar
+   * @returns {Boolean}
+   * @private
+   */
+  ToggleVisibilityButton.prototype._checkToolbarForButton = function (toolbar) {
+    var result = false;
+    if (toolbar) {
+    var haveButton = toolbar.options.toggleVisibilityButton,
+        isPopup = toolbar.options.compactType === 'popup';
+      result = haveButton &amp;&amp; !isPopup;
+    }
+    return result;
+  };
+
+  /**
+   * Check current config of drawer for toolbars that need button
+   * @returns {Boolean}
+   */
+  ToggleVisibilityButton.prototype.checkConfigForButton = function () {
+    var drawingToolsToolbar = this.drawer.toolbars.drawingToolsToolbar,
+        toolOptionsToolbar = this.drawer.toolbars.toolOptionsToolbar,
+        settingsToolbar = this.drawer.toolbars.settingsToolbar,
+
+        drawingToolsHave = this._checkToolbarForButton(drawingToolsToolbar),
+        toolOptionsHave = this._checkToolbarForButton(toolOptionsToolbar),
+        settingsHave = this._checkToolbarForButton(settingsToolbar),
+        needToInit = drawingToolsHave || toolOptionsHave || settingsHave,
+        toolbarsForToggle = [];
+    if (drawingToolsHave) {
+      toolbarsForToggle.push(drawingToolsToolbar);
+    }
+    if (toolOptionsHave) {
+      toolbarsForToggle.push(toolOptionsToolbar);
+    }
+    if (settingsHave) {
+      toolbarsForToggle.push(settingsToolbar);
+    }
+    this.toolbarsForToggle = toolbarsForToggle;
+    return needToInit;
+  };
+
+  /**
+   * @param toolbar
+   * @private
+   */
+  ToggleVisibilityButton.prototype.createControls = function (toolbar) {
+    this._createAndAddButton(toolbar);
+    this.showButton();
+  };
+
+  /**
+   * Deletes tool button.
+   * If  doDeleteToolbarCreationListeners is true - removes listeners of toolbar creation event.
+   * So, tool will not appear on toolbar next time, when toolbar is created.
+   *
+   * @param {boolean} doDeleteToolbarCreationListeners
+   */
+  ToggleVisibilityButton.prototype.removeTool = function (doDeleteToolbarCreationListeners) {
+    if (this.deleteControls) {
+      this.deleteControls();
+    }
+
+    // stop listening toolbar creation
+    if (doDeleteToolbarCreationListeners) {
+      this.drawer.off(this.drawer.EVENT_FLOATING_TOOLBAR_CREATED, this._bindedOnToolbarCreated);
+    }
+  };
+
+
+  /**
+   * Move button over canvas
+   * @param {Number} [left] - new offset of button
+   * @param {Number} [top] - new offset of button
+   */
+  ToggleVisibilityButton.prototype.moveButton = function (left, top) {
+    if (!this.positionLimit) {
+      this.refreshPositionLimits();
+    }
+    left = left > this.positionLimit.left ? this.positionLimit.left : left;
+    top = top > this.positionLimit.top ? this.positionLimit.top : top;
+
+    left = left &lt; 0 ? 0 : left;
+    top = top &lt; 0 ? 0 : top;
+
+
+    this.latestState = {
+      left: left || 0,
+      top: top || 0
+    };
+    this.$button.css({
+      left: left + 'px',
+      top: top + 'px'
+    });
+  };
+
+  /**
+   * Restore initial position/state of button
+   * @private
+   */
+  ToggleVisibilityButton.prototype._setInitialPosition = function () {
+    var offsetLeft = 0,
+        offsetTop = 0,
+        insidePlaceholders = this.drawer.toolbars.toolbarPlaceholders.inside,
+        $insideTopPlaceholderEl = insidePlaceholders &amp;&amp; insidePlaceholders.top &amp;&amp; insidePlaceholders.top.$element,
+        $insideLeftPlaceholderEl = insidePlaceholders &amp;&amp; insidePlaceholders.left &amp;&amp; insidePlaceholders.left.$element;
+    if ($insideTopPlaceholderEl &amp;&amp; $insideTopPlaceholderEl.length) {
+      offsetTop += $insideTopPlaceholderEl.height();
+    }
+    if ($insideLeftPlaceholderEl &amp;&amp; $insideLeftPlaceholderEl.length) {
+      offsetLeft += $insideLeftPlaceholderEl.width();
+    }
+    this.positionInitialized = true;
+    this.moveButton(offsetLeft, offsetTop);
+  };
+
+
+  /**
+   * Creates and adds button to toolbar.
+   * @param  {DrawerToolbar} toolbar
+   * @private
+   */
+  ToggleVisibilityButton.prototype._createAndAddButton = function (toolbar) {
+    var $button,
+        $body = $('body'),
+        toggleVisibilityButtonConf = {
+          buttonOrder: this.options.buttonOrder,
+          additionalClass: 'btn-toggle-canvas hidden',
+          iconClass: 'fa-eye',
+          tooltipText: this.drawer.t('Toggle toolbar vision')
+        };
+    $button = toolbar.addButton(toggleVisibilityButtonConf);
+
+    this.$button = $button;
+
+    var buttonLeft = (this.latestState &amp;&amp; this.latestState.left) || 0,
+        buttonTop = (this.latestState &amp;&amp; this.latestState.top) || 0;
+    this.moveButton(buttonLeft, buttonTop);
+    // set all mouse handlers:
+    // handle mouse move while tool is active
+    $body.off(MOUSE_MOVE).on(MOUSE_MOVE, this._onMouseMove.bind(this));
+
+    // handle mouse down and mouse up
+    $button.off(MOUSE_DOWN).on(MOUSE_DOWN, this._onMouseDown.bind(this));
+    $body.off(MOUSE_UP).on(MOUSE_UP, this._onMouseUp.bind(this));
+
+    // util.bindLongPress($button, 'move-button');
+
+  };
+
+
+
+  /**
+   * React on mouse down
+   * @param {Event} event
+   * @private
+   */
+  ToggleVisibilityButton.prototype._onMouseDown = function (event) {
+    // turn erasing on
+    var self = this;
+    this.moveNow = true;
+    this.triggerClick = true;
+
+    this.refreshSizes();
+    this.refreshPositionLimits();
+
+    util.setTimeout(function () {
+      self.triggerClick = false;
+    }, 200);
+  };
+
+
+  /**
+   * React on mouse up
+   * @param {Event} event
+   * @private
+   */
+  ToggleVisibilityButton.prototype._onMouseUp = function (event) {
+    var self = this,
+        isButton = event.target === this.$button.get(0) || this.$button.find(event.target).length;
+    this.moveNow = false;
+    this.dragNow = false;
+    this.$button.removeClass('dragging');
+    if (isButton &amp;&amp; this.triggerClick &amp;&amp; !this.touchRightNow) {
+      this.triggerClick = false;
+      this.touchRightNow = true;
+      util.setTimeout(function () {
+        self.touchRightNow = false;
+      }, 400);
+      this.showNextItem();
+    }
+  };
+
+  /**
+   * Listens for mouse movement
+   * @param {Event} event
+   * @private
+   */
+  ToggleVisibilityButton.prototype._onMouseMove = function (event) {
+    if (this.moveNow) {
+
+      if (!this.dragNow) {
+        this.$button.addClass('dragging');
+        this.dragNow = true;
+      }
+      if (!this.latestSizes) {
+        this.refreshSizes();
+      }
+      var eventPos = util.getEventPosition(event),
+          latestSizes = this.latestSizes,
+          canvasSize = latestSizes.canvas;
+
+      var left = eventPos.left - canvasSize.left - latestSizes.button.width/2 - latestSizes.scroll.left;
+      var top = eventPos.top - canvasSize.top - latestSizes.button.height/2 - latestSizes.scroll.top;
+
+      this.triggerClick = false;
+      this.moveButton(left, top);
+
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  };
+
+  /**
+   * Refresh max sizes of button offset
+   */
+  ToggleVisibilityButton.prototype.refreshSizes = function () {
+    var result = {};
+
+    var fCanvas = this.drawer.fCanvas,
+        canvasSizeBox = fCanvas.upperCanvasEl.getBoundingClientRect(),
+        buttonSizeBox = this.$button[0].getBoundingClientRect();
+    result.canvas = canvasSizeBox;
+    result.button = buttonSizeBox;
+    result.scroll = util.getScrollTopFromElement(this.$button);
+    this.latestSizes = result;
+    return result;
+  };
+
+  /**
+   *
+   */
+  ToggleVisibilityButton.prototype.refreshPositionLimits = function () {
+    var buttonSize = this.$button.get(0).getBoundingClientRect(),
+        borderSize = 2;
+    this.positionLimit = {
+      left: this.drawer.width - buttonSize.width - borderSize,
+      top: this.drawer.height - buttonSize.height - borderSize,
+    };
+  };
+
+  /**
+   * Show button
+   */
+  ToggleVisibilityButton.prototype.showButton = function () {
+    this.$button.removeClass('hidden');
+  };
+  
+  /**
+   * Hide button
+   */
+  ToggleVisibilityButton.prototype.hideButton = function () {
+    this.$button.addClass('hidden');
+  };
+
+  /**
+   * Toggle current visible toolbar
+   */
+  ToggleVisibilityButton.prototype.showNextItem = function () {
+    var self = this,
+        haveVisible,
+        nextToolbar,
+        firstToolbar = this.toolbarsForToggle[0];
+    this.toolbarsForToggle.forEach(function(toolbar, i){
+      if (!toolbar.invisible) {
+        var indexOfNextToolbar = i +1;
+        haveVisible = true;
+        nextToolbar = self.toolbarsForToggle[indexOfNextToolbar];
+      }
+      toolbar.hideToolbar();
+    });
+    if (haveVisible) {
+      if (nextToolbar) {
+        nextToolbar.showToolbar();
+      }
+    } else {
+      firstToolbar.showToolbar();
+    }
+  };
+
+  pluginsNamespace.ToggleVisibilityButton = ToggleVisibilityButton;
+})(jQuery, DrawerJs.plugins, DrawerJs.util);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_anonymous_-fabric.ErasableImage.html">ErasableImage</a></li><li><a href="-_anonymous_-fabric.ErasableMixin.html">ErasableMixin</a></li><li><a href="-_anonymous_-fabric.ErasableText.html">ErasableText</a></li><li><a href="-_anonymous_-fabric.PText.html">PText</a></li><li><a href="CropImageToolbar.html">CropImageToolbar</a></li><li><a href="DrawerJs.brushes.EraserBrush.html">EraserBrush</a></li><li><a href="DrawerJs.Drawer.html">Drawer</a></li><li><a href="DrawerJs.DrawerApi.html">DrawerApi</a></li><li><a href="DrawerJs.namespace.Canvas.html">namespace.Canvas</a></li><li><a href="DrawerJs.options.LineWidth.html">LineWidth</a></li><li><a href="DrawerJs.options.OpacityOption.html">OpacityOption</a></li><li><a href="DrawerJs.options.StrokeWidth.html">StrokeWidth</a></li><li><a href="DrawerJs.plugins.ArrowOneSide.html">ArrowOneSide</a></li><li><a href="DrawerJs.plugins.ArrowTwoSide.html">ArrowTwoSide</a></li><li><a href="DrawerJs.plugins.BackgroundImageTool.html">BackgroundImageTool</a></li><li><a href="DrawerJs.plugins.BaseBrush.html">BaseBrush</a></li><li><a href="DrawerJs.plugins.BaseShape.html">BaseShape</a></li><li><a href="DrawerJs.plugins.BaseTextOptionTool.html">BaseTextOptionTool</a></li><li><a href="DrawerJs.plugins.BaseTool.html">BaseTool</a></li><li><a href="DrawerJs.plugins.BaseToolOptions.html">BaseToolOptions</a></li><li><a href="DrawerJs.plugins.BrushSize.html">BrushSize</a></li><li><a href="DrawerJs.plugins.CanvasProperties.html">CanvasProperties</a></li><li><a href="DrawerJs.plugins.Circle.html">Circle</a></li><li><a href="DrawerJs.plugins.CloseButton.html">CloseButton</a></li><li><a href="DrawerJs.plugins.ColorpickerControl.html">ColorpickerControl</a></li><li><a href="DrawerJs.plugins.ColorpickerHtml5.html">ColorpickerHtml5</a></li><li><a href="DrawerJs.plugins.ColorTool.html">ColorTool</a></li><li><a href="DrawerJs.plugins.Eraser.html">Eraser</a></li><li><a href="DrawerJs.plugins.Fullscreen.html">Fullscreen</a></li><li><a href="DrawerJs.plugins.FullscreenModeButton.html">FullscreenModeButton</a></li><li><a href="DrawerJs.plugins.ImageCrop.html">ImageCrop</a></li><li><a href="DrawerJs.plugins.ImageCropPlugin.html">ImageCropPlugin</a></li><li><a href="DrawerJs.plugins.ImageTool.html">ImageTool</a></li><li><a href="DrawerJs.plugins.Line.html">Line</a></li><li><a href="DrawerJs.plugins.MinimizeButton.html">MinimizeButton</a></li><li><a href="DrawerJs.plugins.MovableFloatingMode.html">MovableFloatingMode</a></li><li><a href="DrawerJs.plugins.OpacityControl.html">OpacityControl</a></li><li><a href="DrawerJs.plugins.OpenPopupButton.html">OpenPopupButton</a></li><li><a href="DrawerJs.plugins.OvercanvasPopup.html">OvercanvasPopup</a></li><li><a href="DrawerJs.plugins.Pencil.html">Pencil</a></li><li><a href="DrawerJs.plugins.Polygon.html">Polygon</a></li><li><a href="DrawerJs.plugins.Rectangle.html">Rectangle</a></li><li><a href="DrawerJs.plugins.ResizeTool.html">ResizeTool</a></li><li><a href="DrawerJs.plugins.ShapeBorder.html">ShapeBorder</a></li><li><a href="DrawerJs.plugins.ShapeContextMenu.html">ShapeContextMenu</a></li><li><a href="DrawerJs.plugins.SimpleWhiteEraser.html">SimpleWhiteEraser</a></li><li><a href="DrawerJs.plugins.Text.html">Text</a></li><li><a href="DrawerJs.plugins.TextAlign.html">TextAlign</a></li><li><a href="DrawerJs.plugins.TextBackgroundColor.html">TextBackgroundColor</a></li><li><a href="DrawerJs.plugins.TextColor.html">TextColor</a></li><li><a href="DrawerJs.plugins.TextDecoration.html">TextDecoration</a></li><li><a href="DrawerJs.plugins.TextFontFamily.html">TextFontFamily</a></li><li><a href="DrawerJs.plugins.TextFontSize.html">TextFontSize</a></li><li><a href="DrawerJs.plugins.TextFontStyle.html">TextFontStyle</a></li><li><a href="DrawerJs.plugins.TextFontWeight.html">TextFontWeight</a></li><li><a href="DrawerJs.plugins.TextLineHeight.html">TextLineHeight</a></li><li><a href="DrawerJs.plugins.ToggleVisibilityButton.html">ToggleVisibilityButton</a></li><li><a href="DrawerJs.plugins.Triangle.html">Triangle</a></li><li><a href="DrawerJs.plugins.Zoom.html">Zoom</a></li><li><a href="DrawerJs.plugins.ZoomViewport.html">ZoomViewport</a></li><li><a href="DrawerJs.utilPlugins.ToolbarComboBox.html">ToolbarComboBox</a></li><li><a href="DrawerJs.utilPlugins.Tooltip.html">Tooltip</a></li><li><a href="DrawerJs.utilPlugins.TooltipManager.html">TooltipManager</a></li><li><a href="DrawerToolbar.html">DrawerToolbar</a></li><li><a href="DrawerToolbarManager.html">DrawerToolbarManager</a></li><li><a href="DrawingToolsToolbar.html">DrawingToolsToolbar</a></li><li><a href="MinimizedToolbar.html">MinimizedToolbar</a></li><li><a href="OverCanvasToolbar.html">OverCanvasToolbar</a></li><li><a href="SettingsToolbar.html">SettingsToolbar</a></li><li><a href="ToolbarPlaceholder.html">ToolbarPlaceholder</a></li><li><a href="ToolOptionsToolbar.html">ToolOptionsToolbar</a></li></ul><h3>Namespaces</h3><ul><li><a href="DrawerJs.html">DrawerJs</a></li><li><a href="DrawerJs.brushes.html">brushes</a></li><li><a href="DrawerJs.options.html">options</a></li><li><a href="DrawerJs.plugins.html">plugins</a></li><li><a href="DrawerJs.util.html">util</a></li><li><a href="DrawerJs.utilPlugins.html">utilPlugins</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_iconClickHandler">_iconClickHandler</a></li><li><a href="global.html#complexity">complexity</a></li><li><a href="global.html#createPath">createPath</a></li><li><a href="global.html#getObjStyles">getObjStyles</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#initMouseupHandler">initMouseupHandler</a></li><li><a href="global.html#minX">minX</a></li><li><a href="global.html#minY">minY</a></li><li><a href="global.html#objectOptionsList">objectOptionsList</a></li><li><a href="global.html#onInput">onInput</a></li><li><a href="global.html#onMouseMove">onMouseMove</a></li><li><a href="global.html#onMouseUpSuperHandler">onMouseUpSuperHandler</a></li><li><a href="global.html#points">points</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#toObject">toObject</a></li><li><a href="global.html#toString">toString</a></li><li><a href="global.html#toSVG">toSVG</a></li><li><a href="global.html#type">type</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Sat Nov 25 2017 08:23:40 GMT+0100 (Mitteleuropäische Zeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

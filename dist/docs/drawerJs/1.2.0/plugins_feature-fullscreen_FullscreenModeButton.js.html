@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: plugins/feature-fullscreen/FullscreenModeButton.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: plugins/feature-fullscreen/FullscreenModeButton.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function ($, pluginsNamespace, util, DrawerApi) {
+  "use strict";
+
+  var isFF = util.checkBrowser('mozilla'),
+      isSafari = util.checkBrowser('safari'),
+      isWebkit = util.checkBrowser('webkit'),
+      emptyFunc = function () {},
+      isTouchDevice;
+
+  /**
+   * Provides a button to minimize canvas.
+   *
+   * @param {DrawerJs.Drawer} drawer
+   * @param {Object} options
+   * Instance of {@link DrawerJs.Drawer}.
+   *
+   * @constructor
+   * @memberof DrawerJs.plugins
+   */
+  var FullscreenModeButton = function FullscreenModeButtonConstructor(drawer, options) {
+    /**
+     * @type {Drawer}
+     */
+    this.name = 'FullscreenModeButton';
+    this.drawer = drawer;
+    isTouchDevice = this.drawer.touchDevice;
+
+    this._setupOptions(options);
+    this._attachEvents();
+    this._setupFullscreenHandlers();
+
+    this.drawer.on(this.drawer.EVENT_CONFIG_TOOLBAR_CREATED, this._onConfigToolbarCreated.bind(this));
+  };
+
+  /**
+   * Attach global events
+   * @private
+   */
+  FullscreenModeButton.prototype._attachEvents = function () {
+    var self = this,
+        eventsList = '' +
+            'onfullscreenchange.FullscreenModeButton ' +
+            'webkitfullscreenchange.FullscreenModeButton ' +
+            'fullscreenchange.FullscreenModeButton '+
+            'mozfullscreenchange.FullscreenModeButton ' +
+            'MSFullscreenChange.FullscreenModeButton ';
+    $(document).off(eventsList).on(eventsList, function () {
+      self.globalFullscreenMode = !self.globalFullscreenMode;
+      self.reactOnResize = true;
+      util.setTimeout(function () {
+        self.reactOnResize = false;
+      }, 2000);
+      if (self.globalFullscreenMode) {
+        self.setFullscreenStateOn(true);
+      } else {
+        self.setFullscreenStateOff(true);
+      }
+    });
+
+    window.removeEventListener('resize', self._onWindowResize.bind(self));
+    window.addEventListener('resize', self._onWindowResize.bind(self));
+
+    $(document).off('keypress.FullscreenModeButton').on('keypress.FullscreenModeButton', function(e) {
+      var isFullscreen = (self.globalFullscreenMode &amp;&amp; self.fullscreenMode),
+          isEscKey = e.keyCode == 27,
+          turnOffFullscreen = isFullscreen &amp;&amp; isEscKey;
+      if (turnOffFullscreen) { // ESC key
+            self.fullscreenOff(true);
+      }
+    });
+  };
+
+  /**
+   * Setup data
+   * @param {Object} [options] - options to save
+   * @param {String} [pluginName] - name of plugin
+   * @param {Boolean} [doNotSave] - set true to not save result as this.options
+   * @returns {Object} config of plugin
+   */
+  FullscreenModeButton.prototype._setupOptions = function (options, pluginName, doNotSave) {
+    pluginName = pluginName || this.name;
+    var drawer = this.drawerInstance || this.drawer,
+        optionsFromDrawer = drawer &amp;&amp; drawer.getPluginConfig(pluginName),
+        result = $.extend(true,
+            {},
+            this._defaultOptions || {},
+            optionsFromDrawer || {},
+            options || {}
+        );
+
+    if (!doNotSave) {
+      this.options = result;
+    }
+    return result;
+  };
+
+  /**
+   * React on window resize
+   * @private
+   */
+  FullscreenModeButton.prototype._onWindowResize = function () {
+    var self = this;
+
+    if (isFF &amp;&amp; !self.reactOnResize &amp;&amp; !self.globalFullscreenMode) {
+      self._saveCurrentSizes();
+    }
+
+    if (self.reactOnResize) {
+      if (!self.globalFullscreenMode) {
+        self._restoreNormalSizes();
+      } else {
+        self._refreshFullscreenSize(false);
+      }
+    }
+
+
+
+    var turnOff = false &amp;&amp; !isFF, //global, but not for firefox
+        ffTurnOff = !self.fullscreenMode &amp;&amp; self.reactOnResize &amp;&amp; isFF &amp;&amp; !self.globalFullscreenMode,
+        webkitTurnOff = self.fullscreenMode &amp;&amp; !self.globalFullscreenMode &amp;&amp; isWebkit,
+        needToTurnOff = turnOff || ffTurnOff || webkitTurnOff;
+    if (needToTurnOff) {
+      self.setFullscreenStateOff();
+    }
+    self.reactOnResize = false;
+  };
+
+  FullscreenModeButton.prototype._saveCurrentSizes = function (oldWidth, oldHeight) {
+    if (!oldWidth || !oldHeight) {
+      oldWidth = this.drawer.$canvasEditContainer.outerWidth();
+      oldHeight = this.drawer.$canvasEditContainer.outerHeight();
+    }
+
+    this.savedWidth = oldWidth;
+    this.savedHeight = oldHeight;
+  };
+
+  /**
+   * Set drawer size - all available space
+   * @param {Boolean} [save] - save current size for further restore
+   * @private
+   */
+  FullscreenModeButton.prototype._refreshFullscreenSize = function (save) {
+    var $window = $(window),
+        viewportWidth = $window.width(),
+        viewportHeight = $window.height(),
+        oldWidth = this.drawer.width,
+        oldHeight = this.drawer.height,
+        $editContainer = this.drawer.$canvasEditContainer,
+        drawerHaveAnimatedClass = $editContainer.hasClass('animated');
+
+    if (save) {
+      this._saveCurrentSizes(oldWidth, oldHeight);
+    }
+    $editContainer.removeClass('animated');
+    this.drawer.setSize(
+        viewportWidth,
+        viewportHeight
+    );
+    this.drawer.trigger(this.drawer.EVENT_RESTORE_DEFAULT_ZOOM);
+    $editContainer.toggleClass('animated', !!drawerHaveAnimatedClass);
+  };
+
+  /**
+   * Restore drawer size
+   * @private
+   */
+  FullscreenModeButton.prototype._restoreNormalSizes = function () {
+    var self = this,
+        $editContainer = this.drawer.$canvasEditContainer,
+        drawerHaveAnimatedClass = $editContainer.hasClass('animated');
+    $editContainer.removeClass('animated');
+    $editContainer.css('position', this.savedPosition);
+    console.info(this.savedWidth,this.savedHeight);
+    this.drawer.setSize(
+        this.savedWidth,
+        this.savedHeight
+    );
+    util.setTimeout(function () {
+      self.drawer.adjustEditContainer();
+      self.drawer.trigger(self.drawer.EVENT_RESTORE_DEFAULT_ZOOM);
+      util.setTimeout(function () {
+        $editContainer.toggleClass('animated', !!drawerHaveAnimatedClass);
+      },0);
+    }, 0);
+  };
+
+  /**
+   * Setup request/cancel handlers depending on browser
+   * @private
+   */
+  FullscreenModeButton.prototype._setupFullscreenHandlers = function () {
+    var element = document.documentElement,
+        fullscreenCancelFunc,
+        fullscreenRequest_defaultFunc = function () {
+          element.requestFullScreen();
+        },
+        fullscreenRequest_default = element.requestFullScreen &amp;&amp; fullscreenRequest_defaultFunc,
+
+        fullscreenRequest_msFunc = function () {
+          element.msRequestFullscreen();
+        },
+        fullscreenRequest_ms = element.msRequestFullscreen &amp;&amp; fullscreenRequest_msFunc,
+        fullscreenRequest_mozillaFunc = function () {
+          element.mozRequestFullScreen();
+        },
+        fullscreenRequest_mozilla = element.mozRequestFullScreen &amp;&amp; fullscreenRequest_mozillaFunc,
+        fullscreenRequest_webkitFunc = function () {
+          element.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+        },
+        fullscreenRequest_webkit = element.webkitRequestFullScreen &amp;&amp; fullscreenRequest_webkitFunc;
+
+    this.fullscreenRequest =  fullscreenRequest_default ||
+                              fullscreenRequest_ms ||
+                              fullscreenRequest_mozilla ||
+                              fullscreenRequest_webkit ||
+                              this.setFullscreenStateOn.bind(this);
+    fullscreenCancelFunc =  document.cancelFullScreen ||
+                            document.msExitFullscreen ||
+                            document.mozCancelFullScreen ||
+                            document.webkitCancelFullScreen ||
+                            this.setFullscreenStateOff.bind(this);
+    this.fullscreenCancel = function() {
+      fullscreenCancelFunc.call(document);
+    };
+  };
+
+
+  /**
+   * React on toolbar created - create tool button.
+   * @param {fabric.Event} ev
+   * @param {DrawerToolbar} toolbar
+   * @private
+   */
+  FullscreenModeButton.prototype._onConfigToolbarCreated = function (ev, toolbar) {
+    this.fullscreenEl = this.drawer.$canvasEditContainer.get(0);
+    this._createAndAddButton(toolbar);
+  };
+
+  /**
+   * Deletes tool button.
+   * If  doDeleteToolbarCreationListeners is true - removes listeners of toolbar creation event.
+   * So, tool will not appear on toolbar next time, when toolbar is created.
+   *
+   * @param {boolean} [doDeleteToolbarCreationListeners]
+   */
+  FullscreenModeButton.prototype.removeTool = function (doDeleteToolbarCreationListeners) {
+    if (this.deleteControls) {
+      this.deleteControls();
+    }
+    // stop listening toolbar creation
+    if (doDeleteToolbarCreationListeners) {
+      this.drawer.off(this.drawer.EVENT_CONFIG_TOOLBAR_CREATED, this._bindedOnToolbarCreated);
+    }
+  };
+
+
+  /**
+   * Creates and adds minimize button to toolbar.
+   * @param  {DrawerToolbar} toolbar
+   */
+  FullscreenModeButton.prototype._createAndAddButton = function (toolbar) {
+    var toggleModeButtonConfig = {
+          buttonOrder: 10,
+          additionalClass: 'btn-fullscreen-canvas',
+          iconClass: 'fa-window-restore',
+          tooltipText: this.drawer.t('Toggle fullscreen mode'),
+          clickHandler: this._onFullscreenModeButtonClick.bind(this)
+        },
+        $fullscreenModeButton = toolbar.addButton(toggleModeButtonConfig);
+    this.$fullscreenModeButton = $fullscreenModeButton;
+  };
+
+  /**
+   * Toggle fullscreen state
+   * @param {Boolean} [forceCancel]
+   * @private
+   */
+  FullscreenModeButton.prototype._toggleFullScreen = function (forceCancel) {
+    var currStateIsFullscreen_default = (document.fullScreenElement &amp;&amp; document.fullScreenElement !== null),
+        currStateIsFullscreen_moz = (!document.mozFullScreen &amp;&amp; !document.webkitIsFullScreen),
+        currStateIsFullscreen = currStateIsFullscreen_default || currStateIsFullscreen_moz,
+        turnOn = forceCancel === false || (!forceCancel &amp;&amp; currStateIsFullscreen);
+    if (turnOn) {
+      this.fullscreenRequest();
+    } else {
+      this.fullscreenCancel();
+    }
+  };
+
+  /**
+   * On minimize button click handler
+   * @private
+   */
+  FullscreenModeButton.prototype._onFullscreenModeButtonClick = function () {
+    if (this.fullscreenMode) {
+      this.fullscreenOff();
+    } else {
+      this.fullscreenOn();
+    }
+  };
+
+  /**
+   * Drawer - remove fullscreen state
+   */
+  FullscreenModeButton.prototype.setFullscreenStateOff = function () {
+    var canvasContainerIsValid = this.drawer.$canvasEditContainer || this.drawer.$canvasEditContainer.length,
+        currStateIsValid = canvasContainerIsValid;
+    this.changeStateInProgress = true;
+    if (currStateIsValid) {
+      this.drawer.trigger(this.drawer.EVENT_DO_DEACTIVATE_ALL_TOOLS);
+      this.drawer.trigger(this.drawer.EVENT_DESTROY_TOOLTIPS);
+      var self = this,
+          $editContainer = this.drawer.$canvasEditContainer,
+          drawerHaveAnimatedClass = $editContainer.hasClass('animated');
+
+      this.fullscreenMode = false;
+      this.drawer.fullscreenMode = false;
+      $editContainer.addClass('fullscreen-in-progress');
+      $editContainer.removeClass('animated');
+      $editContainer.removeClass('fullscreen');
+
+      this.drawer.$imageElement.show();
+      this._restoreNormalSizes();
+
+      util.setTimeout(function () {
+        self.drawer.toolbars.resetAllToolbars();
+        if (self.$fullscreenModeButton) {
+          self.$fullscreenModeButton.removeClass('active');
+        }
+        if (isSafari) {
+          self._restoreNormalSizes();
+        }
+        $editContainer.toggleClass('animated', !!drawerHaveAnimatedClass);
+        $editContainer.removeClass('fullscreen-in-progress');
+        self.changeStateInProgress = false;
+      }, 0);
+    }
+  };
+
+  /**
+   * Drawer - set fullscreen state
+   */
+  FullscreenModeButton.prototype.setFullscreenStateOn = function () {
+    this.changeStateInProgress = true;
+    var canvasContainerIsValid = this.drawer.$canvasEditContainer || this.drawer.$canvasEditContainer.length,
+        currStateIsValid = canvasContainerIsValid;
+    if (currStateIsValid) {
+      this.drawer.trigger(this.drawer.EVENT_DO_DEACTIVATE_ALL_TOOLS);
+      this.drawer.trigger(this.drawer.EVENT_DESTROY_TOOLTIPS);
+      var self = this,
+          $editContainer = this.drawer.$canvasEditContainer,
+          drawerHaveAnimatedClass = $editContainer.hasClass('animated');
+
+      this.fullscreenMode = true;
+      this.drawer.fullscreenMode = true;
+      this.savedPosition = $editContainer.css('position');
+
+      $editContainer.addClass('fullscreen-in-progress');
+      $editContainer.removeClass('animated');
+      $editContainer.addClass('fullscreen');
+      this.drawer.$imageElement.hide();
+
+      self._refreshFullscreenSize(!isFF);
+
+      util.setTimeout(function () {
+        self.drawer.toolbars.resetAllToolbars();
+        self.drawer.toolbars.settingsToolbar.$toolbar.parent().addClass('fullscreenOverOther');
+        if (self.$fullscreenModeButton) {
+          self.$fullscreenModeButton.addClass('active');
+        }
+        $editContainer.toggleClass('animated', !!drawerHaveAnimatedClass);
+        $editContainer.removeClass('fullscreen-in-progress');
+        self.changeStateInProgress = false;
+      }, 50);
+    }
+  };
+
+  /**
+   * Turn fullscreen mode on
+   */
+  FullscreenModeButton.prototype.fullscreenOn = function () {
+    this._toggleFullScreen(false);
+  };
+
+  /**
+   * Turn fullscreen mode off
+   */
+  FullscreenModeButton.prototype.fullscreenOff = function () {
+    this._toggleFullScreen(true);
+  };
+
+  /**
+   * Provide API method - fullscreenOn
+   */
+  DrawerApi.prototype.fullscreenOn = function () {
+    var tool = this.drawer.getPluginInstance('FullscreenModeButton');
+    tool.fullscreenOn();
+  };
+
+  /**
+   * Provide API method - fullscreenOff
+   */
+  DrawerApi.prototype.fullscreenOff = function () {
+    var tool = this.drawer.getPluginInstance('FullscreenModeButton');
+    tool.fullscreenOff();
+  };
+
+  pluginsNamespace.FullscreenModeButton = FullscreenModeButton;
+})(jQuery, DrawerJs.plugins, DrawerJs.util, DrawerJs.DrawerApi);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_anonymous_-fabric.ErasableImage.html">ErasableImage</a></li><li><a href="-_anonymous_-fabric.ErasableMixin.html">ErasableMixin</a></li><li><a href="-_anonymous_-fabric.ErasableText.html">ErasableText</a></li><li><a href="-_anonymous_-fabric.PText.html">PText</a></li><li><a href="CropImageToolbar.html">CropImageToolbar</a></li><li><a href="DrawerJs.brushes.EraserBrush.html">EraserBrush</a></li><li><a href="DrawerJs.Drawer.html">Drawer</a></li><li><a href="DrawerJs.DrawerApi.html">DrawerApi</a></li><li><a href="DrawerJs.namespace.Canvas.html">namespace.Canvas</a></li><li><a href="DrawerJs.options.LineWidth.html">LineWidth</a></li><li><a href="DrawerJs.options.OpacityOption.html">OpacityOption</a></li><li><a href="DrawerJs.options.StrokeWidth.html">StrokeWidth</a></li><li><a href="DrawerJs.plugins.ArrowOneSide.html">ArrowOneSide</a></li><li><a href="DrawerJs.plugins.ArrowTwoSide.html">ArrowTwoSide</a></li><li><a href="DrawerJs.plugins.BackgroundImageTool.html">BackgroundImageTool</a></li><li><a href="DrawerJs.plugins.BaseBrush.html">BaseBrush</a></li><li><a href="DrawerJs.plugins.BaseShape.html">BaseShape</a></li><li><a href="DrawerJs.plugins.BaseTextOptionTool.html">BaseTextOptionTool</a></li><li><a href="DrawerJs.plugins.BaseTool.html">BaseTool</a></li><li><a href="DrawerJs.plugins.BaseToolOptions.html">BaseToolOptions</a></li><li><a href="DrawerJs.plugins.BrushSize.html">BrushSize</a></li><li><a href="DrawerJs.plugins.CanvasProperties.html">CanvasProperties</a></li><li><a href="DrawerJs.plugins.Circle.html">Circle</a></li><li><a href="DrawerJs.plugins.CloseButton.html">CloseButton</a></li><li><a href="DrawerJs.plugins.ColorpickerControl.html">ColorpickerControl</a></li><li><a href="DrawerJs.plugins.ColorpickerHtml5.html">ColorpickerHtml5</a></li><li><a href="DrawerJs.plugins.ColorTool.html">ColorTool</a></li><li><a href="DrawerJs.plugins.Eraser.html">Eraser</a></li><li><a href="DrawerJs.plugins.Fullscreen.html">Fullscreen</a></li><li><a href="DrawerJs.plugins.FullscreenModeButton.html">FullscreenModeButton</a></li><li><a href="DrawerJs.plugins.ImageCrop.html">ImageCrop</a></li><li><a href="DrawerJs.plugins.ImageCropPlugin.html">ImageCropPlugin</a></li><li><a href="DrawerJs.plugins.ImageTool.html">ImageTool</a></li><li><a href="DrawerJs.plugins.Line.html">Line</a></li><li><a href="DrawerJs.plugins.MinimizeButton.html">MinimizeButton</a></li><li><a href="DrawerJs.plugins.MovableFloatingMode.html">MovableFloatingMode</a></li><li><a href="DrawerJs.plugins.OpacityControl.html">OpacityControl</a></li><li><a href="DrawerJs.plugins.OpenPopupButton.html">OpenPopupButton</a></li><li><a href="DrawerJs.plugins.OvercanvasPopup.html">OvercanvasPopup</a></li><li><a href="DrawerJs.plugins.Pencil.html">Pencil</a></li><li><a href="DrawerJs.plugins.Polygon.html">Polygon</a></li><li><a href="DrawerJs.plugins.Rectangle.html">Rectangle</a></li><li><a href="DrawerJs.plugins.ResizeTool.html">ResizeTool</a></li><li><a href="DrawerJs.plugins.ShapeBorder.html">ShapeBorder</a></li><li><a href="DrawerJs.plugins.ShapeContextMenu.html">ShapeContextMenu</a></li><li><a href="DrawerJs.plugins.SimpleWhiteEraser.html">SimpleWhiteEraser</a></li><li><a href="DrawerJs.plugins.Text.html">Text</a></li><li><a href="DrawerJs.plugins.TextAlign.html">TextAlign</a></li><li><a href="DrawerJs.plugins.TextBackgroundColor.html">TextBackgroundColor</a></li><li><a href="DrawerJs.plugins.TextColor.html">TextColor</a></li><li><a href="DrawerJs.plugins.TextDecoration.html">TextDecoration</a></li><li><a href="DrawerJs.plugins.TextFontFamily.html">TextFontFamily</a></li><li><a href="DrawerJs.plugins.TextFontSize.html">TextFontSize</a></li><li><a href="DrawerJs.plugins.TextFontStyle.html">TextFontStyle</a></li><li><a href="DrawerJs.plugins.TextFontWeight.html">TextFontWeight</a></li><li><a href="DrawerJs.plugins.TextLineHeight.html">TextLineHeight</a></li><li><a href="DrawerJs.plugins.ToggleVisibilityButton.html">ToggleVisibilityButton</a></li><li><a href="DrawerJs.plugins.Triangle.html">Triangle</a></li><li><a href="DrawerJs.plugins.Zoom.html">Zoom</a></li><li><a href="DrawerJs.plugins.ZoomViewport.html">ZoomViewport</a></li><li><a href="DrawerJs.utilPlugins.ToolbarComboBox.html">ToolbarComboBox</a></li><li><a href="DrawerJs.utilPlugins.Tooltip.html">Tooltip</a></li><li><a href="DrawerJs.utilPlugins.TooltipManager.html">TooltipManager</a></li><li><a href="DrawerToolbar.html">DrawerToolbar</a></li><li><a href="DrawerToolbarManager.html">DrawerToolbarManager</a></li><li><a href="DrawingToolsToolbar.html">DrawingToolsToolbar</a></li><li><a href="MinimizedToolbar.html">MinimizedToolbar</a></li><li><a href="OverCanvasToolbar.html">OverCanvasToolbar</a></li><li><a href="SettingsToolbar.html">SettingsToolbar</a></li><li><a href="ToolbarPlaceholder.html">ToolbarPlaceholder</a></li><li><a href="ToolOptionsToolbar.html">ToolOptionsToolbar</a></li></ul><h3>Namespaces</h3><ul><li><a href="DrawerJs.html">DrawerJs</a></li><li><a href="DrawerJs.brushes.html">brushes</a></li><li><a href="DrawerJs.options.html">options</a></li><li><a href="DrawerJs.plugins.html">plugins</a></li><li><a href="DrawerJs.util.html">util</a></li><li><a href="DrawerJs.utilPlugins.html">utilPlugins</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_iconClickHandler">_iconClickHandler</a></li><li><a href="global.html#complexity">complexity</a></li><li><a href="global.html#createPath">createPath</a></li><li><a href="global.html#getObjStyles">getObjStyles</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#initMouseupHandler">initMouseupHandler</a></li><li><a href="global.html#minX">minX</a></li><li><a href="global.html#minY">minY</a></li><li><a href="global.html#objectOptionsList">objectOptionsList</a></li><li><a href="global.html#onInput">onInput</a></li><li><a href="global.html#onMouseMove">onMouseMove</a></li><li><a href="global.html#onMouseUpSuperHandler">onMouseUpSuperHandler</a></li><li><a href="global.html#points">points</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#toObject">toObject</a></li><li><a href="global.html#toString">toString</a></li><li><a href="global.html#toSVG">toSVG</a></li><li><a href="global.html#type">type</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Sat Nov 25 2017 08:23:40 GMT+0100 (Mitteleuropäische Zeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

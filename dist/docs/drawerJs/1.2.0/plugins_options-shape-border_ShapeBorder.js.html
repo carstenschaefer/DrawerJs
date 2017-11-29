@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: plugins/options-shape-border/ShapeBorder.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: plugins/options-shape-border/ShapeBorder.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function ($, pluginsNamespace, BaseToolOptions, util) {
+  "use strict";
+
+  /**
+   * Provides toolbar controls for configuring border size and color.
+   * Uses colorpicker plugin, so depends on it.
+   *
+   * @param {DrawerJs.Drawer} drawer
+   * Instance of {@link DrawerJs.Drawer}.
+   *
+   * @param {Object} options
+   * Configuration object.
+   *
+   * @param {String} options.color
+   * Default border color.
+   *
+   * @param {String} options.borderTypes
+   * Object with all borders that will be available for selection
+   * &lt;br>&lt;br>
+   *
+   * Example:
+   * &lt;code>
+   * &lt;pre>
+   * "None": {
+   *   width: 0,
+   *   description: 'None'
+   * },
+   * "Solid thin": {
+   *   width: 1,
+   *   preview: this.assetsFolder + 'border-solid-thin.png'
+   * },
+   * &lt;/pre>
+   * &lt;/code>
+   *
+   * @param {String} options.defaultBorder
+   * Border that will be selected when object is created.
+   *
+   * @constructor
+   * @memberof DrawerJs.plugins
+   */
+  var ShapeBorder = function BorderConfigPlugin(drawer, options) {
+    this.optionName = 'border';
+    this.name = 'ShapeBorder';
+    // call super constructor
+    BaseToolOptions.call(this, drawer);
+
+    /**
+     * Option name. On selecting tool/object, if this.toolName is in array of
+     * object allowed options - tool will show controls
+     * @type {String}
+     */
+
+    // DrawerJs is created, so basePath is set and  util.getDrawerFolderUrl() works properly.
+    // so we can set assets folder
+    this.assetsFolder = util.getDrawerFolderUrl() + 'assets/';
+
+    // complete default option paths by assets path.
+    this._setGlobalClickHandler();
+    this._completeDefaultOptionsPaths();
+
+    // setup colorpicker for border color
+    this.colorpicker = new pluginsNamespace.ColorpickerControl(this.drawer, this.options);
+
+    this.currentColor = this.options.color;
+    this.currentBorder = this.options.borderTypes[this.options.defaultBorder];
+    this.activeToolIsShape = false;
+
+    this.drawer.on(this.drawer.EVENT_CANVAS_START_RESIZE, this.hideStyleDropdown.bind(this));
+  };
+
+  ShapeBorder.prototype = Object.create(BaseToolOptions.prototype);
+  ShapeBorder.prototype.constructor = BaseToolOptions;
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+  ShapeBorder.prototype._defaultOptions = {
+      color: 'rgba(0, 0, 0, 0)',
+      borderTypes: {
+        "None": {
+          width: 0,
+          description: 'None',
+          color: 'transparent'
+        },
+        "Solid thin": {
+          width: 1,
+          preview: 'border-solid-thin.png'
+        },
+        "Solid bold": {
+          width: 5,
+          preview: 'border-solid-bold.png'
+        },
+        "Dashed thin": {
+          width: 1,
+          dashArray: [8, 8],
+          preview: 'border-dashed-thin.png'
+        },
+        "Dashed bold": {
+          width: 5,
+          dashArray: [8, 8],
+          preview: 'border-dashed-bold.png'
+        }
+      },
+      defaultBorder: "None"
+    };
+
+
+    /**
+     * Complete path to previews by prepending path to assets folder to them
+     */
+    ShapeBorder.prototype._completeDefaultOptionsPaths = function() {
+      for (var borderType in this.options.borderTypes) {
+        var borderOption = this.options.borderTypes[borderType];
+        if (borderOption.preview) {
+          borderOption.preview = this.assetsFolder + borderOption.preview;
+        }
+      }
+    };
+
+  /**
+   * Set listeners for clicks - to properly close controls on outside clicks
+   */
+  ShapeBorder.prototype._setGlobalClickHandler = function() {
+    var self = this;
+    $(window.document).off('click.DrawerShapeBorder').on('click.DrawerShapeBorder', function (e) {
+      var $target = $(e.target),
+          isIndicator = $target.hasClass('border-type-indicator');
+      if (self.isDropdownVisible &amp;&amp; !isIndicator) {
+        self.hideStyleDropdown();
+      }
+    });
+  };
+
+
+  /**
+   * When an object is selected on canvas we want to reflect that object's color and border type
+   * on the toolbar.
+   *
+   * This method checks selected object type and if it's a shape it gets that shape's color
+   * and border type and sets them as active on the color/border selection toolbar.
+   *
+   * @param fabricEvent
+   * @param fabricEvent
+   */
+  ShapeBorder.prototype.updateControlsFromObject = function (target) {
+    // get color
+    this.updateColorFromObject(target);
+    // get stroke
+    this.updateStrokeFromObject(target);
+    // now update controls state
+    this.updateControls();
+  };
+
+
+  /**
+   * Sets this.currentColor same as object stroke color,
+   * or TRASPARENT if object has no stroke
+   *
+   * @param  {fabric.Object} object
+   */
+  ShapeBorder.prototype.updateColorFromObject = function (object) {
+    var color = null;
+    color = object.get('stroke');
+    if (color) {
+      this.currentColor = color;
+    } else {
+      this.currentColor = pluginsNamespace.ColorpickerControl.TRANSPARENT;
+    }
+  };
+
+
+  /**
+   * Sets this.currentBorder same as object stroke,
+   * if object border patten matches with one of predefined patterns.
+   *
+   * @param  {fabric.Object} object
+   */
+  ShapeBorder.prototype.updateStrokeFromObject = function(object) {
+      // get stroke params
+      var shapeDashArray = object.get('strokeDashArray');
+      var shapeDashWidth = object.get('strokeWidth');
+      // search for pattern
+      for (var b in this.options.borderTypes) {
+        if (this.options.borderTypes.hasOwnProperty(b)) {
+          var bType = this.options.borderTypes[b];
+
+          var dashArrayEquals = JSON.stringify(bType.dashArray) === JSON.stringify(shapeDashArray);
+
+          if (!bType.dashArray &amp;&amp; !shapeDashArray) {
+            dashArrayEquals = true;
+          }
+
+          if (dashArrayEquals &amp;&amp; bType.width == shapeDashWidth) {
+            this.currentBorder = bType;
+          }
+        }
+      }
+  };
+
+
+  /**
+   * Apply selected border style to added object.
+   *
+   * @param evt
+   * @param fabricEvent
+   */
+  ShapeBorder.prototype._onObjectAdded = function (evt, fabricEvent) {
+    // do not react on object:added, if canvas is not loaded fully
+    if (this.drawer.mode != this.drawer.MODE_ACTIVE)
+      return;
+
+    var currentShape = fabricEvent.target;
+
+    this.applyBorderStyle(currentShape);
+    this.drawer.fCanvas.renderAll();
+  };
+
+
+  /**
+   * Update controls a
+   * If activated tool is Line/Arrow:
+   * 1) save old values of borderColor and border type
+   * 2) make current border color same as drawer active color
+   * 3) make current border 'Solid thin'
+   * @param {BaseTool} tool
+   */
+  ShapeBorder.prototype.onActivateTool = function ( tool) {
+
+    if (tool instanceof pluginsNamespace.Line ||
+      tool instanceof pluginsNamespace.ArrowOneSide ||
+      tool instanceof pluginsNamespace.ArrowTwoSide) {
+        this.colorBeforeLineShape = this.currentColor;
+        this.borderBeforeLineShape = this.currentBorder;
+
+        this.currentColor = this.drawer.activeColor;
+        this.currentBorder = this.options.borderTypes["Solid thin"];
+        this.updateControls();
+    } else if (this.colorBeforeLineShape !== undefined) {
+        this.currentColor = this.colorBeforeLineShape;
+        this.currentBorder = this.borderBeforeLineShape;
+
+        delete this.colorBeforeLineShape;
+        delete this.borderBeforeLineShape;
+        this.updateControls();
+    }
+  };
+
+
+
+  /**
+   * Creates controls and adds them to toolbar.
+   * @param {DrawerToolbar} toolbar to add control to
+   */
+  ShapeBorder.prototype.createControls = function (toolbar) {
+    var _this = this;
+
+    // ------ color button -----------
+    this.colorButton = this.colorpicker.createControl(toolbar, this.onColorSelected.bind(this));
+    this.colorpicker.setColor(this.options.color);
+
+    // rewrite this, ugh...
+    this.colorButton.css('display', 'inline-block');
+    this.colorButton.find('.toolbar-label').text(this.drawer.t('Border:'));
+    // ------ /color button -----------
+
+    // ------ border type button -----------
+    _this.$borderTypeButton = $(
+      '&lt;li class="editable-canvas-border-type" ' +
+          'data-editable-canvas-sizeable="toolbar-button" ' +
+          '>' +
+      '&lt;span class="toolbar-label editable-canvas-border-type-label">' +
+      this.drawer.t('Border type:') + ' ' +
+      '&lt;/span>' +
+      '&lt;span class="border-type-indicator" ' +
+            'data-editable-canvas-sizeable="toolbar-button" ' +
+            '>' +
+      '&lt;/span>' +
+      '&lt;span class="border-type-dropdown toolbar-dropdown-block hidden" ' +
+            'data-editable-canvas-sizeable="toolbar-button" ' +
+            // 'data-editable-canvas-cssrules="top"' +
+      '>' +
+      '&lt;/span>' +
+      '&lt;/li>');
+
+
+    _this.isDropdownVisible = false;
+
+    _this.$borderTypeButton.$dropdown = _this.$borderTypeButton.find('.border-type-dropdown');
+    _this.$borderTypeButton.$indicator = _this.$borderTypeButton.find('.border-type-indicator');
+
+    util.bindClick(_this.$borderTypeButton, 'border-type-dropdown', _this.toggleStyleDropdown.bind(_this));
+
+    var $borderTypes = $('&lt;ul>&lt;/ul>');
+    _this.$borderTypeButton.$dropdown.append($borderTypes);
+
+    var borderTypeHandler = function (event) {
+      var $target = $(event.target),
+          borderTypeName = $target.attr('data-border-type');
+      if (borderTypeName) {
+        _this.currentBorder = _this.options.borderTypes[borderTypeName];
+        _this.onColorSelected();
+
+        event.stopPropagation();
+        event.preventDefault();
+      }
+    };
+
+    for (var borderTypeName in this.options.borderTypes) {
+      if (this.options.borderTypes.hasOwnProperty(borderTypeName)) {
+        var borderDefinition = this.options.borderTypes[borderTypeName];
+
+        var li = $(
+          '&lt;li data-border-type="' + borderTypeName + '"' +
+          'data-editable-canvas-sizeable="toolbar-button" ' +
+          // 'data-editable-canvas-cssrules="height,line-height">' +
+          // 'data-editable-canvas-cssrules="line-height">' +
+          '&lt;/li>');
+        if (borderDefinition.preview) {
+          li.css('background-image', 'url(' + borderDefinition.preview + ')');
+        }
+        if (borderDefinition.description) {
+          li.text(borderDefinition.description);
+        }
+        util.bindClick(li, 'border-type', borderTypeHandler);
+
+        $borderTypes.append(li);
+      }
+    }
+
+    toolbar.addControl(_this.$borderTypeButton, this.options.buttonOrder);
+    // ------ /border type button -----------
+
+    _this.onColorSelected();
+    _this.hideControls();
+  };
+
+
+  /**
+   * React on user color selection
+   * @param  {String} selectedColor
+   */
+  ShapeBorder.prototype.onColorSelected = function (selectedColor) {
+    if (selectedColor) {
+      this.currentColor = selectedColor;
+    }
+
+    this.updateControls();
+
+    if (this.drawer.fCanvas) {
+      var currentShape = this.drawer.fCanvas.getActiveObject();
+      if (currentShape) {
+        this.applyBorderStyle(currentShape);
+      }
+      this.drawer.fCanvas.renderAll();
+    }
+  };
+
+
+  /**
+   * Apply current border style to object
+   * @todo @refactor
+   * @param  {fabric.Object} fabricObject
+   */
+  ShapeBorder.prototype.applyBorderStyle = function (fabricObject) {
+    if (util.isShape(fabricObject) || fabricObject instanceof fabric.Line) {
+      if (this.currentBorder.color) {
+        fabricObject.set('stroke', this.currentBorder.color);
+      } else {
+        fabricObject.set('stroke', this.currentColor);
+      }
+
+      fabricObject.set('strokeWidth', this.currentBorder.width);
+      if (this.currentBorder.dashArray) {
+        fabricObject.set('strokeDashArray', this.currentBorder.dashArray);
+      } else {
+        fabricObject.set('strokeDashArray', null);
+      }
+    }
+  };
+
+
+  /**
+   * Updates UI to reflect selected border and color.
+   * Hides colorpicker if current border is 'None'
+   */
+  ShapeBorder.prototype.updateControls = function () {
+    // update color button
+    this.colorpicker.setColor(this.currentColor);
+
+    // hide dropdowns when something is selected
+    this.hideStyleDropdown();
+
+    // also hide color button when border None is selected
+    if (this.currentBorder.description == 'None') {
+      this.colorpicker.hideControls();
+    } else {
+      this.colorpicker.showControls();
+    }
+
+    // set indicator background
+    var $indicator = this.$borderTypeButton.find('.border-type-indicator');
+    var background = this.currentBorder.preview ? 'url(' + this.currentBorder.preview + ')'
+                                                : 'none';
+    $indicator.css('background-image',background);
+
+    // set indicator text
+    if (this.currentBorder.description) {
+      $indicator.text(this.drawer.t(
+        this.currentBorder.description
+      ));
+    } else {
+      $indicator.text('');
+    }
+  };
+
+
+  ShapeBorder.prototype.showControls = function () {
+    this.colorpicker.showControls();
+    this.$borderTypeButton.show();
+  };
+
+  ShapeBorder.prototype.hideControls = function () {
+    this.colorpicker.hideControls();
+    this.$borderTypeButton.hide();
+  };
+
+
+  ShapeBorder.prototype.toggleStyleDropdown = function() {
+    var needToShow = !this.isDropdownVisible;
+    if (needToShow) {
+      this.showStyleDropdown();
+    } else {
+      this.hideStyleDropdown();
+    }
+  };
+
+  ShapeBorder.prototype.hideStyleDropdown = function() {
+    this.$borderTypeButton.$dropdown.addClass('hidden');
+    this.isDropdownVisible = false;
+    if (this.$clonedDropdown) {
+      this.$clonedDropdown.remove();
+    }
+  };
+
+  ShapeBorder.prototype.showStyleDropdown = function() {
+    this.$borderTypeButton.$dropdown.removeClass('hidden');
+    this.isDropdownVisible = true;
+
+    var toolbar = this.drawer &amp;&amp; this.drawer.toolbars &amp;&amp; this.drawer.toolbars.toolOptionsToolbar,
+        toolbarOptions = toolbar &amp;&amp; toolbar.options,
+        notInsidePopup = toolbarOptions &amp;&amp; toolbarOptions.position !== 'popup',
+        outside = toolbarOptions &amp;&amp; toolbarOptions.positionType === 'outside',
+        insideScrollable = toolbarOptions &amp;&amp; toolbarOptions.compactType === 'scrollable',
+        toolbarHaveScrollable = notInsidePopup &amp;&amp; outside &amp;&amp; insideScrollable;
+    if (toolbarHaveScrollable) {
+      var $dropdown = this.$borderTypeButton.$dropdown,
+          clone;
+
+      $dropdown.removeClass('hidden');
+      clone = $dropdown.clone(true);
+
+      this.$borderTypeButton.$dropdown.closest('.toolbar-placeholder').append(clone);
+      clone.addClass('border-type-dropdown-cloned');
+      this.$clonedDropdown = clone;
+
+      var drawerSizes = util.getScrollOffset(this.drawer.$canvasEditContainer),
+          parentSizes = util.getScrollOffset(this.$borderTypeButton),
+          canvasRect = this.drawer.$canvasEditContainer.get(0).getBoundingClientRect();
+
+      var buttonSizes = this.$borderTypeButton.get(0).getBoundingClientRect(),
+          buttonCenter = buttonSizes.left + buttonSizes.width/2,
+          clonedDropdownOffset = (buttonCenter - canvasRect.left - (parentSizes.left - drawerSizes.left)) - this.$clonedDropdown.width() / 2;
+
+      var offsetRightFromCss = 12,
+          toRightOffset = buttonSizes.left + buttonSizes.width - canvasRect.left - (parentSizes.left - drawerSizes.left) - this.$clonedDropdown.width() - offsetRightFromCss;
+      this.$clonedDropdown.css({
+        'left': toRightOffset
+      });
+      $dropdown.addClass('hidden');
+    }
+  };
+
+  pluginsNamespace.ShapeBorder = ShapeBorder;
+
+}(jQuery, DrawerJs.plugins, DrawerJs.plugins.BaseToolOptions, DrawerJs.util));
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_anonymous_-fabric.ErasableImage.html">ErasableImage</a></li><li><a href="-_anonymous_-fabric.ErasableMixin.html">ErasableMixin</a></li><li><a href="-_anonymous_-fabric.ErasableText.html">ErasableText</a></li><li><a href="-_anonymous_-fabric.PText.html">PText</a></li><li><a href="CropImageToolbar.html">CropImageToolbar</a></li><li><a href="DrawerJs.brushes.EraserBrush.html">EraserBrush</a></li><li><a href="DrawerJs.Drawer.html">Drawer</a></li><li><a href="DrawerJs.DrawerApi.html">DrawerApi</a></li><li><a href="DrawerJs.namespace.Canvas.html">namespace.Canvas</a></li><li><a href="DrawerJs.options.LineWidth.html">LineWidth</a></li><li><a href="DrawerJs.options.OpacityOption.html">OpacityOption</a></li><li><a href="DrawerJs.options.StrokeWidth.html">StrokeWidth</a></li><li><a href="DrawerJs.plugins.ArrowOneSide.html">ArrowOneSide</a></li><li><a href="DrawerJs.plugins.ArrowTwoSide.html">ArrowTwoSide</a></li><li><a href="DrawerJs.plugins.BackgroundImageTool.html">BackgroundImageTool</a></li><li><a href="DrawerJs.plugins.BaseBrush.html">BaseBrush</a></li><li><a href="DrawerJs.plugins.BaseShape.html">BaseShape</a></li><li><a href="DrawerJs.plugins.BaseTextOptionTool.html">BaseTextOptionTool</a></li><li><a href="DrawerJs.plugins.BaseTool.html">BaseTool</a></li><li><a href="DrawerJs.plugins.BaseToolOptions.html">BaseToolOptions</a></li><li><a href="DrawerJs.plugins.BrushSize.html">BrushSize</a></li><li><a href="DrawerJs.plugins.CanvasProperties.html">CanvasProperties</a></li><li><a href="DrawerJs.plugins.Circle.html">Circle</a></li><li><a href="DrawerJs.plugins.CloseButton.html">CloseButton</a></li><li><a href="DrawerJs.plugins.ColorpickerControl.html">ColorpickerControl</a></li><li><a href="DrawerJs.plugins.ColorpickerHtml5.html">ColorpickerHtml5</a></li><li><a href="DrawerJs.plugins.ColorTool.html">ColorTool</a></li><li><a href="DrawerJs.plugins.Eraser.html">Eraser</a></li><li><a href="DrawerJs.plugins.Fullscreen.html">Fullscreen</a></li><li><a href="DrawerJs.plugins.FullscreenModeButton.html">FullscreenModeButton</a></li><li><a href="DrawerJs.plugins.ImageCrop.html">ImageCrop</a></li><li><a href="DrawerJs.plugins.ImageCropPlugin.html">ImageCropPlugin</a></li><li><a href="DrawerJs.plugins.ImageTool.html">ImageTool</a></li><li><a href="DrawerJs.plugins.Line.html">Line</a></li><li><a href="DrawerJs.plugins.MinimizeButton.html">MinimizeButton</a></li><li><a href="DrawerJs.plugins.MovableFloatingMode.html">MovableFloatingMode</a></li><li><a href="DrawerJs.plugins.OpacityControl.html">OpacityControl</a></li><li><a href="DrawerJs.plugins.OpenPopupButton.html">OpenPopupButton</a></li><li><a href="DrawerJs.plugins.OvercanvasPopup.html">OvercanvasPopup</a></li><li><a href="DrawerJs.plugins.Pencil.html">Pencil</a></li><li><a href="DrawerJs.plugins.Polygon.html">Polygon</a></li><li><a href="DrawerJs.plugins.Rectangle.html">Rectangle</a></li><li><a href="DrawerJs.plugins.ResizeTool.html">ResizeTool</a></li><li><a href="DrawerJs.plugins.ShapeBorder.html">ShapeBorder</a></li><li><a href="DrawerJs.plugins.ShapeContextMenu.html">ShapeContextMenu</a></li><li><a href="DrawerJs.plugins.SimpleWhiteEraser.html">SimpleWhiteEraser</a></li><li><a href="DrawerJs.plugins.Text.html">Text</a></li><li><a href="DrawerJs.plugins.TextAlign.html">TextAlign</a></li><li><a href="DrawerJs.plugins.TextBackgroundColor.html">TextBackgroundColor</a></li><li><a href="DrawerJs.plugins.TextColor.html">TextColor</a></li><li><a href="DrawerJs.plugins.TextDecoration.html">TextDecoration</a></li><li><a href="DrawerJs.plugins.TextFontFamily.html">TextFontFamily</a></li><li><a href="DrawerJs.plugins.TextFontSize.html">TextFontSize</a></li><li><a href="DrawerJs.plugins.TextFontStyle.html">TextFontStyle</a></li><li><a href="DrawerJs.plugins.TextFontWeight.html">TextFontWeight</a></li><li><a href="DrawerJs.plugins.TextLineHeight.html">TextLineHeight</a></li><li><a href="DrawerJs.plugins.ToggleVisibilityButton.html">ToggleVisibilityButton</a></li><li><a href="DrawerJs.plugins.Triangle.html">Triangle</a></li><li><a href="DrawerJs.plugins.Zoom.html">Zoom</a></li><li><a href="DrawerJs.plugins.ZoomViewport.html">ZoomViewport</a></li><li><a href="DrawerJs.utilPlugins.ToolbarComboBox.html">ToolbarComboBox</a></li><li><a href="DrawerJs.utilPlugins.Tooltip.html">Tooltip</a></li><li><a href="DrawerJs.utilPlugins.TooltipManager.html">TooltipManager</a></li><li><a href="DrawerToolbar.html">DrawerToolbar</a></li><li><a href="DrawerToolbarManager.html">DrawerToolbarManager</a></li><li><a href="DrawingToolsToolbar.html">DrawingToolsToolbar</a></li><li><a href="MinimizedToolbar.html">MinimizedToolbar</a></li><li><a href="OverCanvasToolbar.html">OverCanvasToolbar</a></li><li><a href="SettingsToolbar.html">SettingsToolbar</a></li><li><a href="ToolbarPlaceholder.html">ToolbarPlaceholder</a></li><li><a href="ToolOptionsToolbar.html">ToolOptionsToolbar</a></li></ul><h3>Namespaces</h3><ul><li><a href="DrawerJs.html">DrawerJs</a></li><li><a href="DrawerJs.brushes.html">brushes</a></li><li><a href="DrawerJs.options.html">options</a></li><li><a href="DrawerJs.plugins.html">plugins</a></li><li><a href="DrawerJs.util.html">util</a></li><li><a href="DrawerJs.utilPlugins.html">utilPlugins</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_iconClickHandler">_iconClickHandler</a></li><li><a href="global.html#complexity">complexity</a></li><li><a href="global.html#createPath">createPath</a></li><li><a href="global.html#getObjStyles">getObjStyles</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#initMouseupHandler">initMouseupHandler</a></li><li><a href="global.html#minX">minX</a></li><li><a href="global.html#minY">minY</a></li><li><a href="global.html#objectOptionsList">objectOptionsList</a></li><li><a href="global.html#onInput">onInput</a></li><li><a href="global.html#onMouseMove">onMouseMove</a></li><li><a href="global.html#onMouseUpSuperHandler">onMouseUpSuperHandler</a></li><li><a href="global.html#points">points</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#toObject">toObject</a></li><li><a href="global.html#toString">toString</a></li><li><a href="global.html#toSVG">toSVG</a></li><li><a href="global.html#type">type</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Sat Nov 25 2017 08:23:40 GMT+0100 (Mitteleuropäische Zeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

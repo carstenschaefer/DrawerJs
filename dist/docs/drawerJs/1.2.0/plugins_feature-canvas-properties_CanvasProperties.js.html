@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: plugins/feature-canvas-properties/CanvasProperties.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: plugins/feature-canvas-properties/CanvasProperties.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function ($, pluginsNamespace) {
+  'use strict';
+
+  /**
+   * Provides a modal popup for controlling canvas properties
+   * like width,height, and aligment.
+   *
+   * @param {DrawerJs.Drawer} drawerInstance
+   * @param {Object} options
+   * Instance of {@link DrawerJs.Drawer}.
+   *
+   * @constructor
+   * @memberof DrawerJs.plugins
+   */
+  var CanvasProperties = function CanvasPropertiesConstructor(drawerInstance, options) {
+    var _this = this;
+    if (!drawerInstance.redactorInstance) {
+      console.error("'CanvasProperties' plugin can work only in redactor mode!");
+      return;
+    }
+
+    this.drawerInstance = drawerInstance;
+    this.drawer = drawerInstance;
+    this.name = 'DrawerPluginCanvasProperties';
+    this.LOGTAG = _this.name;
+
+    this._setupOptions(options);
+
+    _this.drawerInstance.on(_this.drawerInstance.EVENT_CONFIG_TOOLBAR_CREATED,
+      function (event, toolbar) {
+        var redactorInstance = _this.drawerInstance.redactorInstance;
+
+        var modalTemplate = '' +
+          '&lt;section id="redactor-drawer-properties">' +
+            '&lt;label class="drawer-properties-size-label">' +
+              drawerInstance.t('Size (px)') +
+            '&lt;/label>' +
+            '&lt;input class="drawer-properties-width" type="number" ' +
+                   'value="' + drawerInstance.width + '" />' +
+            '&lt;span class="size-separator">x&lt;/span>' +
+            '&lt;input class="drawer-properties-height" type="number" ' +
+                   'value="' + drawerInstance.height + '"/>' +
+            '&lt;label class="drawer-properties-align-label">' +
+              drawerInstance.t('Position') +
+            '&lt;/label>' +
+            '&lt;select class="drawer-properties-align">' +
+              '&lt;option value="inline">' +
+                drawerInstance.t('Inline') +
+              '&lt;/option>' +
+              '&lt;option value="left">' +
+                drawerInstance.t('Left') +
+              '&lt;/option>' +
+              '&lt;option value="center">' +
+                drawerInstance.t('Center') +
+              '&lt;/option>' +
+              '&lt;option value="right">' +
+                drawerInstance.t('Right') +
+              '&lt;/option>' +
+              '&lt;option value="floating">' +
+                drawerInstance.t('Floating') +
+              '&lt;/option>' +
+            '&lt;/select>' +
+            '&lt;span class="group-transparency">' +
+              '&lt;label class="drawer-properties-background">' +
+                drawerInstance.t('Background') +
+              '&lt;/label>' +
+              '&lt;input type="checkbox" id="background-transparency" ' +
+                     'class="background-transparency"/>' +
+              '&lt;label for="background-transparency" ' +
+                     'class="background-transparency">' +
+                drawerInstance.t('transparent') +
+              '&lt;/label>'+
+            '&lt;/span>' +
+          '&lt;/section>';
+
+        redactorInstance.modal.addTemplate('drawer-properties', modalTemplate);
+
+        var clickHandler = function canvasPropsClickHandler() {
+              _this.openPopup();
+              return false;
+            },
+            buttonConfig = {
+              buttonOrder: 9,
+              additionalClass: 'btn-canvas-properties',
+              iconClass: 'fa-cog',
+              tooltipText: drawerInstance.t('Canvas properties'),
+              clickHandler: clickHandler
+            };
+        toolbar.addButton(buttonConfig);
+      });
+  };
+
+  /**
+   * Setup data
+   * @param {Object} [options] - options to save
+   * @param {String} [pluginName] - name of plugin
+   * @param {Boolean} [doNotSave] - set true to not save result as this.options
+   * @returns {Object} config of plugin
+   */
+  CanvasProperties.prototype._setupOptions = function (options, pluginName, doNotSave) {
+    pluginName = pluginName || this.name;
+    var drawer = this.drawerInstance || this.drawer,
+        optionsFromDrawer = drawer &amp;&amp; drawer.getPluginConfig(pluginName),
+        result = $.extend(true,
+            {},
+            this._defaultOptions || {},
+            optionsFromDrawer || {},
+            options || {}
+        );
+
+    if (!doNotSave) {
+      this.options = result;
+    }
+    return result;
+  };
+
+  CanvasProperties.prototype.openPopup = function () {
+    var _this = this;
+
+    var redactorInstance = _this.drawerInstance.redactorInstance;
+    var drawerInstance = _this.drawerInstance;
+    var $image = _this.drawerInstance.$imageElement;
+
+    redactorInstance.modal.load(
+      'drawer-properties', drawerInstance.t('Canvas properties'), 260
+    );
+
+    redactorInstance.modal.createCancelButton();
+    $('.redactor-modal-close-btn').html(drawerInstance.t('Cancel'));
+    var button = redactorInstance.modal.createActionButton(
+      drawerInstance.t('Save'));
+
+    var $properties = $('#redactor-drawer-properties');
+
+    var currentAlign = drawerInstance.getAlign();
+
+    $properties.find('select').val(currentAlign);
+    $properties.find('.drawer-properties-width').val(drawerInstance.width);
+    $properties.find('.drawer-properties-height').val(drawerInstance.height);
+
+    _this.currentAlign = currentAlign;
+    _this.currentHeight = drawerInstance.height;
+    _this.currentWidth = drawerInstance.width;
+
+    // transparency checkbox var
+    _this.$backgroundTransparencyInput =
+      $properties.find('input.background-transparency');
+    // set it
+    _this.$backgroundTransparencyInput.attr('checked', drawerInstance.options.transparentBackground);
+
+    // transparency checkbox click handler
+    $properties.find('.background-transparency').click(function () {
+      var checked = _this.$backgroundTransparencyInput.attr('checked');
+      _this.$backgroundTransparencyInput.attr('checked', !checked);
+    });
+
+    button.on('click', function () {
+      _this.saveProperties();
+    });
+
+    var $alignControl = $properties.find('.drawer-properties-align');
+
+    function updateTransparencyVisible() {
+      var selectedAlign = $properties.find('.drawer-properties-align').val();
+      if(selectedAlign == 'floating') {
+        $properties.find('.group-transparency').show();
+      } else {
+        $properties.find('.group-transparency').hide();
+      }
+    }
+
+    updateTransparencyVisible();
+
+    $alignControl.change(function () {
+      updateTransparencyVisible();
+    });
+
+    redactorInstance.modal.show();
+
+    // restore body overflow immediately to avoid content jumping
+    // Jumping happens because with overflow:hidden page has no scrollbar
+    // and its size extends by 24px
+    $(document.body)
+      .css('overflow', redactorInstance.modal.bodyOveflow);
+  };
+
+  CanvasProperties.prototype.saveProperties = function () {
+    var _this = this;
+
+    var redactorInstance = _this.drawerInstance.redactorInstance;
+    var drawerInstance = _this.drawerInstance;
+
+    var fullscreenPlugin =
+      _this.drawerInstance.getPluginInstance('Fullscreen');
+
+    var modal = $('#redactor-drawer-properties');
+    var width = modal.find('input.drawer-properties-width').val();
+    var height = modal.find('input.drawer-properties-height').val();
+    var align = modal
+      .find('select.drawer-properties-align option:selected')
+      .val();
+
+    if(_this.currentWidth != width || _this.currentHeight != height){
+      if(fullscreenPlugin &amp;&amp; fullscreenPlugin.isInFullscreenMode()){
+        fullscreenPlugin.exitFullscreen();
+      }
+
+      drawerInstance.setSize(width, height);
+    }
+
+    drawerInstance.options.align = align;
+    if(_this.currentAlign != align){
+      if(fullscreenPlugin &amp;&amp; fullscreenPlugin.isInFullscreenMode()){
+        fullscreenPlugin.exitFullscreen();
+      }
+
+      drawerInstance.setAlign(align);
+    }
+
+    var transparent = _this.$backgroundTransparencyInput.attr('checked');
+    drawerInstance.options.transparentBackground = !!transparent;
+
+    redactorInstance.modal.close();
+    drawerInstance.onCanvasModified();
+
+    drawerInstance.trigger(drawerInstance.EVENT_OPTIONS_CHANGED);
+  };
+
+  pluginsNamespace.CanvasProperties = CanvasProperties;
+}(jQuery, DrawerJs.plugins));</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_anonymous_-fabric.ErasableImage.html">ErasableImage</a></li><li><a href="-_anonymous_-fabric.ErasableMixin.html">ErasableMixin</a></li><li><a href="-_anonymous_-fabric.ErasableText.html">ErasableText</a></li><li><a href="-_anonymous_-fabric.PText.html">PText</a></li><li><a href="CropImageToolbar.html">CropImageToolbar</a></li><li><a href="DrawerJs.brushes.EraserBrush.html">EraserBrush</a></li><li><a href="DrawerJs.Drawer.html">Drawer</a></li><li><a href="DrawerJs.DrawerApi.html">DrawerApi</a></li><li><a href="DrawerJs.namespace.Canvas.html">namespace.Canvas</a></li><li><a href="DrawerJs.options.LineWidth.html">LineWidth</a></li><li><a href="DrawerJs.options.OpacityOption.html">OpacityOption</a></li><li><a href="DrawerJs.options.StrokeWidth.html">StrokeWidth</a></li><li><a href="DrawerJs.plugins.ArrowOneSide.html">ArrowOneSide</a></li><li><a href="DrawerJs.plugins.ArrowTwoSide.html">ArrowTwoSide</a></li><li><a href="DrawerJs.plugins.BackgroundImageTool.html">BackgroundImageTool</a></li><li><a href="DrawerJs.plugins.BaseBrush.html">BaseBrush</a></li><li><a href="DrawerJs.plugins.BaseShape.html">BaseShape</a></li><li><a href="DrawerJs.plugins.BaseTextOptionTool.html">BaseTextOptionTool</a></li><li><a href="DrawerJs.plugins.BaseTool.html">BaseTool</a></li><li><a href="DrawerJs.plugins.BaseToolOptions.html">BaseToolOptions</a></li><li><a href="DrawerJs.plugins.BrushSize.html">BrushSize</a></li><li><a href="DrawerJs.plugins.CanvasProperties.html">CanvasProperties</a></li><li><a href="DrawerJs.plugins.Circle.html">Circle</a></li><li><a href="DrawerJs.plugins.CloseButton.html">CloseButton</a></li><li><a href="DrawerJs.plugins.ColorpickerControl.html">ColorpickerControl</a></li><li><a href="DrawerJs.plugins.ColorpickerHtml5.html">ColorpickerHtml5</a></li><li><a href="DrawerJs.plugins.ColorTool.html">ColorTool</a></li><li><a href="DrawerJs.plugins.Eraser.html">Eraser</a></li><li><a href="DrawerJs.plugins.Fullscreen.html">Fullscreen</a></li><li><a href="DrawerJs.plugins.FullscreenModeButton.html">FullscreenModeButton</a></li><li><a href="DrawerJs.plugins.ImageCrop.html">ImageCrop</a></li><li><a href="DrawerJs.plugins.ImageCropPlugin.html">ImageCropPlugin</a></li><li><a href="DrawerJs.plugins.ImageTool.html">ImageTool</a></li><li><a href="DrawerJs.plugins.Line.html">Line</a></li><li><a href="DrawerJs.plugins.MinimizeButton.html">MinimizeButton</a></li><li><a href="DrawerJs.plugins.MovableFloatingMode.html">MovableFloatingMode</a></li><li><a href="DrawerJs.plugins.OpacityControl.html">OpacityControl</a></li><li><a href="DrawerJs.plugins.OpenPopupButton.html">OpenPopupButton</a></li><li><a href="DrawerJs.plugins.OvercanvasPopup.html">OvercanvasPopup</a></li><li><a href="DrawerJs.plugins.Pencil.html">Pencil</a></li><li><a href="DrawerJs.plugins.Polygon.html">Polygon</a></li><li><a href="DrawerJs.plugins.Rectangle.html">Rectangle</a></li><li><a href="DrawerJs.plugins.ResizeTool.html">ResizeTool</a></li><li><a href="DrawerJs.plugins.ShapeBorder.html">ShapeBorder</a></li><li><a href="DrawerJs.plugins.ShapeContextMenu.html">ShapeContextMenu</a></li><li><a href="DrawerJs.plugins.SimpleWhiteEraser.html">SimpleWhiteEraser</a></li><li><a href="DrawerJs.plugins.Text.html">Text</a></li><li><a href="DrawerJs.plugins.TextAlign.html">TextAlign</a></li><li><a href="DrawerJs.plugins.TextBackgroundColor.html">TextBackgroundColor</a></li><li><a href="DrawerJs.plugins.TextColor.html">TextColor</a></li><li><a href="DrawerJs.plugins.TextDecoration.html">TextDecoration</a></li><li><a href="DrawerJs.plugins.TextFontFamily.html">TextFontFamily</a></li><li><a href="DrawerJs.plugins.TextFontSize.html">TextFontSize</a></li><li><a href="DrawerJs.plugins.TextFontStyle.html">TextFontStyle</a></li><li><a href="DrawerJs.plugins.TextFontWeight.html">TextFontWeight</a></li><li><a href="DrawerJs.plugins.TextLineHeight.html">TextLineHeight</a></li><li><a href="DrawerJs.plugins.ToggleVisibilityButton.html">ToggleVisibilityButton</a></li><li><a href="DrawerJs.plugins.Triangle.html">Triangle</a></li><li><a href="DrawerJs.plugins.Zoom.html">Zoom</a></li><li><a href="DrawerJs.plugins.ZoomViewport.html">ZoomViewport</a></li><li><a href="DrawerJs.utilPlugins.ToolbarComboBox.html">ToolbarComboBox</a></li><li><a href="DrawerJs.utilPlugins.Tooltip.html">Tooltip</a></li><li><a href="DrawerJs.utilPlugins.TooltipManager.html">TooltipManager</a></li><li><a href="DrawerToolbar.html">DrawerToolbar</a></li><li><a href="DrawerToolbarManager.html">DrawerToolbarManager</a></li><li><a href="DrawingToolsToolbar.html">DrawingToolsToolbar</a></li><li><a href="MinimizedToolbar.html">MinimizedToolbar</a></li><li><a href="OverCanvasToolbar.html">OverCanvasToolbar</a></li><li><a href="SettingsToolbar.html">SettingsToolbar</a></li><li><a href="ToolbarPlaceholder.html">ToolbarPlaceholder</a></li><li><a href="ToolOptionsToolbar.html">ToolOptionsToolbar</a></li></ul><h3>Namespaces</h3><ul><li><a href="DrawerJs.html">DrawerJs</a></li><li><a href="DrawerJs.brushes.html">brushes</a></li><li><a href="DrawerJs.options.html">options</a></li><li><a href="DrawerJs.plugins.html">plugins</a></li><li><a href="DrawerJs.util.html">util</a></li><li><a href="DrawerJs.utilPlugins.html">utilPlugins</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_iconClickHandler">_iconClickHandler</a></li><li><a href="global.html#complexity">complexity</a></li><li><a href="global.html#createPath">createPath</a></li><li><a href="global.html#getObjStyles">getObjStyles</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#initMouseupHandler">initMouseupHandler</a></li><li><a href="global.html#minX">minX</a></li><li><a href="global.html#minY">minY</a></li><li><a href="global.html#objectOptionsList">objectOptionsList</a></li><li><a href="global.html#onInput">onInput</a></li><li><a href="global.html#onMouseMove">onMouseMove</a></li><li><a href="global.html#onMouseUpSuperHandler">onMouseUpSuperHandler</a></li><li><a href="global.html#points">points</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#toObject">toObject</a></li><li><a href="global.html#toString">toString</a></li><li><a href="global.html#toSVG">toSVG</a></li><li><a href="global.html#type">type</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Sat Nov 25 2017 08:23:40 GMT+0100 (Mitteleuropäische Zeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

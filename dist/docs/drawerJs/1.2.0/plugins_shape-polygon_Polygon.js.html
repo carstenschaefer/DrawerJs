@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: plugins/shape-polygon/Polygon.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: plugins/shape-polygon/Polygon.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function ($, BaseShape, pluginsNamespace, util) {
+  "use strict";
+
+  var MOUSE_DOWN = util.mouseDown('Polygon');
+  var MOUSE_MOVE = util.mouseMove('Polygon');
+  var MOUSE_UP = util.mouseUp('Polygon');
+
+  /**
+   * Provides a polygon button which can be used to draw polygons.
+   *
+   * @param {DrawerJs.Drawer} drawerInstance
+   * Instance of {@link DrawerJs.Drawer}.
+   *
+   * @param {Object} options
+   * Configuration object.
+   *
+   * @constructor
+   * @memberof DrawerJs.plugins
+   */
+  var Polygon = function PolygonConstructor(drawerInstance, options) {
+    var _this = this;
+
+    BaseShape.call(_this, drawerInstance);
+
+    this.name = 'Polygon';
+    this.btnClass = 'btn-polygon';
+    this.faClass = 'fa-star';
+    this.tooltip = drawerInstance.t('Draw a Polygon');
+    this.helpTooltipText = drawerInstance.t('Click to start a new line');
+
+    this.options = options || {};
+    this.centeringMode =
+      this.options.centeringMode || BaseShape.CENTERING_MODE.NORMAL;
+
+    drawerInstance.on(drawerInstance.EVENT_EDIT_STOP, function () {
+      _this.finishDraw();
+    });
+
+    drawerInstance.on(drawerInstance.EVENT_DO_ACTIVATE_TOOL,
+      function (event, tool) {
+        if (!(tool instanceof Polygon)) {
+          _this.finishDraw();
+        }
+      });
+  };
+
+  Polygon.prototype = Object.create(BaseShape.prototype);
+  Polygon.prototype.constructor = Polygon;
+
+  Polygon.prototype.setUpHandlers = function () {
+    var _this = this;
+
+    _this.drawerInstance.fCanvas._oldSelectionState = _this.drawerInstance.fCanvas.selection;
+    _this.drawerInstance.fCanvas.selection = false;
+
+    _this.$stopButton = $('&lt;button class="stop-polygon">' +
+      _this.drawerInstance.t('Stop drawing a polygon') +
+    '&lt;/button>');
+    _this.drawerInstance.$canvasEditContainer.append(_this.$stopButton);
+    _this.$stopButton.click(function () {
+      _this.finishDraw();
+    });
+
+    _this.drawerInstance
+      .on(_this.drawerInstance.EVENT_KEYDOWN, function (event, originalEvent) {
+        if (originalEvent.which == 27) {
+          _this.finishDraw();
+        }
+      });
+
+    var drawingArea = $(this.drawerInstance.fCanvas.upperCanvasEl);
+
+    var newPointHandler = function (event) {
+      _this.addNewPoint(event);
+
+      if (!_this.poly.__mouseEventSet) {
+        _this.setUpMoveEvent();
+        _this.poly.__mouseEventSet = true;
+      }
+
+      _this.drawerInstance.fCanvas.renderAll();
+    };
+
+    if (_this.drawerInstance.touchDevice) {
+      drawingArea.on(MOUSE_DOWN, function (event) {
+        newPointHandler(event);
+        event.preventDefault();
+        event.stopPropagation();
+        return false;
+      });
+
+      drawingArea.on(MOUSE_UP, function (event) {
+        drawingArea.off(MOUSE_MOVE);
+        _this.poly.__mouseEventSet = false;
+        event.preventDefault();
+        event.stopPropagation();
+        return false;
+      });
+    } else {
+      drawingArea.on(MOUSE_DOWN, function (event) {
+        newPointHandler(event);
+        event.preventDefault();
+        event.stopPropagation();
+        return false;
+      });
+    }
+  };
+
+  Polygon.prototype.addNewPoint = function (event) {
+    var _this = this,
+        pointCoords = this.drawer.fCanvas.getPointer(event),
+        left = pointCoords.x,
+        top = pointCoords.y;
+
+    if (!_this.poly) {
+      _this.startLeft = left;
+      _this.startTop = top;
+
+      _this.poly = new fabric.SegmentablePolygon([[
+        {
+          x: 0,
+          y: 0
+        }
+      ]]);
+      _this.poly.set('fill', _this.drawerInstance.activeColor);
+      _this.poly.set('opacity', _this.drawerInstance.activeOpacity);
+      _this.poly.set('left', left);
+      _this.poly.set('top', top);
+      _this.poly.set('evented', false);
+      _this.poly.set('selectable', false);
+      _this.drawerInstance.fCanvas.add(_this.poly);
+    }
+
+    var points = _this.poly.get('points');
+
+    var centerPoint = _this.poly.getCenterPoint();
+    left = left - centerPoint.x;
+    top = top - centerPoint.y;
+
+    points[0].push({
+      x: left,
+      y: top
+    });
+
+    _this.poly.set('points', points);
+
+    _this.fixPosition();
+  };
+
+  Polygon.prototype.setUpMoveEvent = function () {
+    var _this = this;
+    var drawingArea = $(this.drawerInstance.fCanvas.upperCanvasEl);
+
+    drawingArea.on(MOUSE_MOVE, function (event) {
+      var points = _this.poly.get('points'),
+          pointCoords = _this.drawerInstance.fCanvas.getPointer(event),
+          centerPoint = _this.poly.getCenterPoint(),
+          left = pointCoords.x - centerPoint.x,
+          top = pointCoords.y - centerPoint.y;
+
+      if (points[0].length >= 2) {
+        points[0][points[0].length - 1].x = left;
+        points[0][points[0].length - 1].y = top;
+
+        _this.poly.set('points', points);
+
+        _this.fixPosition();
+
+        _this.drawerInstance.fCanvas.renderAll();
+      }
+    });
+  };
+
+  Polygon.prototype.fixPosition = function () {
+    var _this = this;
+
+    _this.poly._fixPoints();
+    _this.poly.setCoords();
+
+    var points = _this.poly.get('points');
+
+    var centerPoint = _this.poly.getCenterPoint();
+    var firstPointX = centerPoint.x + points[0][0].x;
+    var firstPointY = centerPoint.y + points[0][0].y;
+
+    var firstPointGlobalX = firstPointX;
+    var firstPointGlobalY = firstPointY;
+
+    var xDiff = _this.startLeft - firstPointGlobalX;
+    var yDiff = _this.startTop - firstPointGlobalY;
+    _this.poly.set('left', _this.poly.get('left') + xDiff);
+    _this.poly.set('top', _this.poly.get('top') + yDiff);
+  };
+
+  Polygon.prototype.finishDraw = function () {
+    var _this = this;
+
+    _this.drawerInstance.fCanvas.selection = _this.drawerInstance.fCanvas._oldSelectionState;
+
+    var drawingArea = $(this.drawerInstance.fCanvas.upperCanvasEl);
+
+    drawingArea.off(MOUSE_MOVE);
+    drawingArea.off(MOUSE_DOWN);
+    drawingArea.off(MOUSE_UP);
+
+    util.unbindLongPress(drawingArea, 'polygon');
+
+    if (_this.poly) {
+      // only remove last point for non-touch device
+      if (!_this.drawerInstance.touchDevice) {
+        var points = this.poly.get('points');
+        points[0].splice(points[0].length - 1, 1);
+        this.poly.set('points', points);
+      }
+
+      this.fixPosition();
+
+      _this.poly.set('evented', true);
+      _this.poly.set('selectable', true);
+
+      var cloned = this.poly.clone();
+      this.drawerInstance.fCanvas.add(cloned);
+      this.drawerInstance.fCanvas.remove(this.poly);
+    }
+
+    this.poly = null;
+
+    this.drawerInstance.fCanvas.renderAll();
+    if (_this.$stopButton) {
+      util.setTimeout(function () {
+        _this.$stopButton.remove();
+      }, 1);
+    }
+
+    this._deactivateTool();
+  };
+
+  pluginsNamespace.Polygon = Polygon;
+
+}(jQuery, DrawerJs.plugins.BaseShape, DrawerJs.plugins, DrawerJs.util));</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_anonymous_-fabric.ErasableImage.html">ErasableImage</a></li><li><a href="-_anonymous_-fabric.ErasableMixin.html">ErasableMixin</a></li><li><a href="-_anonymous_-fabric.ErasableText.html">ErasableText</a></li><li><a href="-_anonymous_-fabric.PText.html">PText</a></li><li><a href="CropImageToolbar.html">CropImageToolbar</a></li><li><a href="DrawerJs.brushes.EraserBrush.html">EraserBrush</a></li><li><a href="DrawerJs.Drawer.html">Drawer</a></li><li><a href="DrawerJs.DrawerApi.html">DrawerApi</a></li><li><a href="DrawerJs.namespace.Canvas.html">namespace.Canvas</a></li><li><a href="DrawerJs.options.LineWidth.html">LineWidth</a></li><li><a href="DrawerJs.options.OpacityOption.html">OpacityOption</a></li><li><a href="DrawerJs.options.StrokeWidth.html">StrokeWidth</a></li><li><a href="DrawerJs.plugins.ArrowOneSide.html">ArrowOneSide</a></li><li><a href="DrawerJs.plugins.ArrowTwoSide.html">ArrowTwoSide</a></li><li><a href="DrawerJs.plugins.BackgroundImageTool.html">BackgroundImageTool</a></li><li><a href="DrawerJs.plugins.BaseBrush.html">BaseBrush</a></li><li><a href="DrawerJs.plugins.BaseShape.html">BaseShape</a></li><li><a href="DrawerJs.plugins.BaseTextOptionTool.html">BaseTextOptionTool</a></li><li><a href="DrawerJs.plugins.BaseTool.html">BaseTool</a></li><li><a href="DrawerJs.plugins.BaseToolOptions.html">BaseToolOptions</a></li><li><a href="DrawerJs.plugins.BrushSize.html">BrushSize</a></li><li><a href="DrawerJs.plugins.CanvasProperties.html">CanvasProperties</a></li><li><a href="DrawerJs.plugins.Circle.html">Circle</a></li><li><a href="DrawerJs.plugins.CloseButton.html">CloseButton</a></li><li><a href="DrawerJs.plugins.ColorpickerControl.html">ColorpickerControl</a></li><li><a href="DrawerJs.plugins.ColorpickerHtml5.html">ColorpickerHtml5</a></li><li><a href="DrawerJs.plugins.ColorTool.html">ColorTool</a></li><li><a href="DrawerJs.plugins.Eraser.html">Eraser</a></li><li><a href="DrawerJs.plugins.Fullscreen.html">Fullscreen</a></li><li><a href="DrawerJs.plugins.FullscreenModeButton.html">FullscreenModeButton</a></li><li><a href="DrawerJs.plugins.ImageCrop.html">ImageCrop</a></li><li><a href="DrawerJs.plugins.ImageCropPlugin.html">ImageCropPlugin</a></li><li><a href="DrawerJs.plugins.ImageTool.html">ImageTool</a></li><li><a href="DrawerJs.plugins.Line.html">Line</a></li><li><a href="DrawerJs.plugins.MinimizeButton.html">MinimizeButton</a></li><li><a href="DrawerJs.plugins.MovableFloatingMode.html">MovableFloatingMode</a></li><li><a href="DrawerJs.plugins.OpacityControl.html">OpacityControl</a></li><li><a href="DrawerJs.plugins.OpenPopupButton.html">OpenPopupButton</a></li><li><a href="DrawerJs.plugins.OvercanvasPopup.html">OvercanvasPopup</a></li><li><a href="DrawerJs.plugins.Pencil.html">Pencil</a></li><li><a href="DrawerJs.plugins.Polygon.html">Polygon</a></li><li><a href="DrawerJs.plugins.Rectangle.html">Rectangle</a></li><li><a href="DrawerJs.plugins.ResizeTool.html">ResizeTool</a></li><li><a href="DrawerJs.plugins.ShapeBorder.html">ShapeBorder</a></li><li><a href="DrawerJs.plugins.ShapeContextMenu.html">ShapeContextMenu</a></li><li><a href="DrawerJs.plugins.SimpleWhiteEraser.html">SimpleWhiteEraser</a></li><li><a href="DrawerJs.plugins.Text.html">Text</a></li><li><a href="DrawerJs.plugins.TextAlign.html">TextAlign</a></li><li><a href="DrawerJs.plugins.TextBackgroundColor.html">TextBackgroundColor</a></li><li><a href="DrawerJs.plugins.TextColor.html">TextColor</a></li><li><a href="DrawerJs.plugins.TextDecoration.html">TextDecoration</a></li><li><a href="DrawerJs.plugins.TextFontFamily.html">TextFontFamily</a></li><li><a href="DrawerJs.plugins.TextFontSize.html">TextFontSize</a></li><li><a href="DrawerJs.plugins.TextFontStyle.html">TextFontStyle</a></li><li><a href="DrawerJs.plugins.TextFontWeight.html">TextFontWeight</a></li><li><a href="DrawerJs.plugins.TextLineHeight.html">TextLineHeight</a></li><li><a href="DrawerJs.plugins.ToggleVisibilityButton.html">ToggleVisibilityButton</a></li><li><a href="DrawerJs.plugins.Triangle.html">Triangle</a></li><li><a href="DrawerJs.plugins.Zoom.html">Zoom</a></li><li><a href="DrawerJs.plugins.ZoomViewport.html">ZoomViewport</a></li><li><a href="DrawerJs.utilPlugins.ToolbarComboBox.html">ToolbarComboBox</a></li><li><a href="DrawerJs.utilPlugins.Tooltip.html">Tooltip</a></li><li><a href="DrawerJs.utilPlugins.TooltipManager.html">TooltipManager</a></li><li><a href="DrawerToolbar.html">DrawerToolbar</a></li><li><a href="DrawerToolbarManager.html">DrawerToolbarManager</a></li><li><a href="DrawingToolsToolbar.html">DrawingToolsToolbar</a></li><li><a href="MinimizedToolbar.html">MinimizedToolbar</a></li><li><a href="OverCanvasToolbar.html">OverCanvasToolbar</a></li><li><a href="SettingsToolbar.html">SettingsToolbar</a></li><li><a href="ToolbarPlaceholder.html">ToolbarPlaceholder</a></li><li><a href="ToolOptionsToolbar.html">ToolOptionsToolbar</a></li></ul><h3>Namespaces</h3><ul><li><a href="DrawerJs.html">DrawerJs</a></li><li><a href="DrawerJs.brushes.html">brushes</a></li><li><a href="DrawerJs.options.html">options</a></li><li><a href="DrawerJs.plugins.html">plugins</a></li><li><a href="DrawerJs.util.html">util</a></li><li><a href="DrawerJs.utilPlugins.html">utilPlugins</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_iconClickHandler">_iconClickHandler</a></li><li><a href="global.html#complexity">complexity</a></li><li><a href="global.html#createPath">createPath</a></li><li><a href="global.html#getObjStyles">getObjStyles</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#initMouseupHandler">initMouseupHandler</a></li><li><a href="global.html#minX">minX</a></li><li><a href="global.html#minY">minY</a></li><li><a href="global.html#objectOptionsList">objectOptionsList</a></li><li><a href="global.html#onInput">onInput</a></li><li><a href="global.html#onMouseMove">onMouseMove</a></li><li><a href="global.html#onMouseUpSuperHandler">onMouseUpSuperHandler</a></li><li><a href="global.html#points">points</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#toObject">toObject</a></li><li><a href="global.html#toString">toString</a></li><li><a href="global.html#toSVG">toSVG</a></li><li><a href="global.html#type">type</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Sat Nov 25 2017 08:23:40 GMT+0100 (Mitteleuropäische Zeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

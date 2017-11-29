@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: fabricjs_extensions/PText.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: fabricjs_extensions/PText.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>    (function (global) {
+
+    'use strict';
+
+    var fabric = global.fabric || (global.fabric = {}),
+        extend = fabric.util.object.extend;
+
+    /**
+     * @class
+     * @extends fabric.IText
+     */
+    fabric.PText = fabric.util.createClass(fabric.IText, {
+        type: 'PText',
+
+        _defaultOptions : {
+            editIconMode    : true,
+        },
+
+        /**
+         * List of options to show when object is selected
+         * @type {Array}
+         */
+        objectOptionsList : [
+          'color',
+          'border',
+          'opacity',
+
+          'TextLineHeight',
+          'TextAlign'
+        ],
+
+        /**
+         * Initializes object.
+         * @param  {String} text
+         * @param  {Object} options
+         * @param  {boolean} options.editIconMode edit icon size, in pixels
+         * @param  {number|String} options.editIconSize edit icon size, in pixels or strings:  small, medium, large
+         */
+        initialize: function (text, options) {
+            this.callSuper('initialize', text, options);
+
+            this.options =  $.extend(true, this._defaultOptions || {}, options || {});
+
+            // create icon
+            var iconPath = DrawerJs.util.getDrawerFolderUrl() + 'assets/pencil-square-o.32.png';
+
+            // initialize control
+          if (this.options.editIconMode) {
+            this.startEditControl = new ObjectFloatingControl(this, iconPath, this._iconClickHandler.bind(this), this.options);
+          }
+        },
+      /**
+       * Copied from fabric js - add support of useCopiedStyles
+       * Handles onInput event
+       * @param {Event} e Event object
+       */
+      onInput: function(e) {
+        if (!this.isEditing || this.inCompositionMode) {
+          return;
+        }
+        var offset = this.selectionStart || 0,
+            offsetEnd = this.selectionEnd || 0,
+            textLength = this.text.length,
+            newTextLength = this.hiddenTextarea.value.length,
+            diff, charsToInsert, start;
+        if (newTextLength > textLength) {
+          //we added some character
+          start = this._selectionDirection === 'left' ? offsetEnd : offset;
+          diff = newTextLength - textLength;
+          charsToInsert = this.hiddenTextarea.value.slice(start, start + diff);
+        }
+        else {
+          //we selected a portion of text and then input something else.
+          //Internet explorer does not trigger this else
+          diff = newTextLength - textLength + offsetEnd - offset;
+          charsToInsert = this.hiddenTextarea.value.slice(offset, offset + diff);
+        }
+        var emptySelection = this.selectionStart === this.selectionEnd,
+            useCopiedStyles = emptySelection &amp;&amp; this.canvas.copiedTextStyle;
+        this.insertChars(charsToInsert, useCopiedStyles);
+        e.stopPropagation();
+      },
+
+      renderCursorOrSelection: function (ctx) {
+        this.canvas.fire('canvas:zoom:upper:set');
+        this.callSuper('renderCursorOrSelection', ctx);
+        this.canvas.fire('canvas:zoom:upper:restore');
+
+      },
+
+
+        /**
+         * Overriding IText mouseup handler.
+         * This version do not trigger editing mode on second click.
+         * This functionality is inside _iconClickHandler
+         */
+        initMouseupHandler: function() {
+            this.on('mouseup', function(evt) {
+                if (this.options.editIconMode) {
+                    this.onMouseUpHandler(evt);
+                } else {
+                    this.onMouseUpSuperHandler(evt);
+                }
+            });
+        },
+
+
+        onMouseUpHandler : function (evt) {
+            this.__isMousedown = false;
+            if (!this.editable || (this._isObjectMoved &amp;&amp; this._isObjectMoved(evt.e))) {
+              return;
+            }
+
+            this.selected = true;
+        },
+
+        /**
+         *
+         * @see fabric.js Text.onMouseUpSuperHandler
+         * @param  {fabric.Event} evt
+         */
+        onMouseUpSuperHandler : function(evt) {
+            this.__isMousedown = false;
+            if (!this.editable || (this._isObjectMoved &amp;&amp; this._isObjectMoved(evt.e))) {
+                return;
+            }
+
+            if (this.__lastSelected &amp;&amp; !this.__corner) {
+                this.enterEditing(evt.e);
+                if (this.selectionStart === this.selectionEnd) {
+                    this.initDelayedCursor(true);
+                }
+                else {
+                    this.renderCursorOrSelection();
+                }
+            }
+
+            this.selected = true;
+        },
+
+
+        /**
+         * Checks, if click on canvas is inside icon rect.
+         * If yes - launches editing mode
+         *
+         * @param  {fabric.Event} evt
+         */
+        _iconClickHandler : function(evt) {
+            //  select current object again, it is required for proper UI work
+            this.canvas.setActiveObject(this);
+
+            // enter editing and do stuff. Code is copied from IText.initMouseupHandler
+            this.enterEditing(evt.e);
+            if (this.selectionStart === this.selectionEnd) {
+                this.initDelayedCursor(true);
+            }
+            else {
+                this.renderCursorOrSelection();
+            }
+        },
+      /**
+       * Collect all styles which affects text
+       *
+       * @param  {fabric.Object} [obj] - text object
+       * @returns {object} - styles object
+       */
+        getObjStyles: function (obj) {
+          obj = obj || this;
+          var styles = {
+            fontSize: obj.fontSize,
+            fill: obj.fill,
+            textBackgroundColor: obj.textBackgroundColor,
+            textDecoration: obj.textDecoration,
+            fontFamily: obj.fontFamily,
+            fontWeight: obj.fontWeight,
+            fontStyle: obj.fontStyle,
+            lineHeight: obj.lineHeight,
+            stroke: obj.stroke,
+            strokeWidth: obj.strokeWidth
+          };
+          return styles;
+        },
+
+
+        /**
+         * Draws text and edit icon
+         * @param  {Context2D} ctx
+         */
+        render : function (ctx) {
+          this.callSuper('render', ctx);
+        },
+
+
+        toObject: function (propertiesToInclude) {
+            return extend(this.callSuper('toObject', propertiesToInclude));
+        }
+
+    });
+
+
+    /**
+     * Creates fabric object from data.
+     * Is sync, so simply returns new object.
+     *
+     * @param objData
+     * @param {function} callback
+     */
+    fabric.PText.fromObject = function (objData) {
+        return new fabric.PText(objData.text, objData);
+    };
+
+})(typeof exports !== 'undefined' ? exports : this);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_anonymous_-fabric.ErasableImage.html">ErasableImage</a></li><li><a href="-_anonymous_-fabric.ErasableMixin.html">ErasableMixin</a></li><li><a href="-_anonymous_-fabric.ErasableText.html">ErasableText</a></li><li><a href="-_anonymous_-fabric.PText.html">PText</a></li><li><a href="CropImageToolbar.html">CropImageToolbar</a></li><li><a href="DrawerJs.brushes.EraserBrush.html">EraserBrush</a></li><li><a href="DrawerJs.Drawer.html">Drawer</a></li><li><a href="DrawerJs.DrawerApi.html">DrawerApi</a></li><li><a href="DrawerJs.namespace.Canvas.html">namespace.Canvas</a></li><li><a href="DrawerJs.options.LineWidth.html">LineWidth</a></li><li><a href="DrawerJs.options.OpacityOption.html">OpacityOption</a></li><li><a href="DrawerJs.options.StrokeWidth.html">StrokeWidth</a></li><li><a href="DrawerJs.plugins.ArrowOneSide.html">ArrowOneSide</a></li><li><a href="DrawerJs.plugins.ArrowTwoSide.html">ArrowTwoSide</a></li><li><a href="DrawerJs.plugins.BackgroundImageTool.html">BackgroundImageTool</a></li><li><a href="DrawerJs.plugins.BaseBrush.html">BaseBrush</a></li><li><a href="DrawerJs.plugins.BaseShape.html">BaseShape</a></li><li><a href="DrawerJs.plugins.BaseTextOptionTool.html">BaseTextOptionTool</a></li><li><a href="DrawerJs.plugins.BaseTool.html">BaseTool</a></li><li><a href="DrawerJs.plugins.BaseToolOptions.html">BaseToolOptions</a></li><li><a href="DrawerJs.plugins.BrushSize.html">BrushSize</a></li><li><a href="DrawerJs.plugins.CanvasProperties.html">CanvasProperties</a></li><li><a href="DrawerJs.plugins.Circle.html">Circle</a></li><li><a href="DrawerJs.plugins.CloseButton.html">CloseButton</a></li><li><a href="DrawerJs.plugins.ColorpickerControl.html">ColorpickerControl</a></li><li><a href="DrawerJs.plugins.ColorpickerHtml5.html">ColorpickerHtml5</a></li><li><a href="DrawerJs.plugins.ColorTool.html">ColorTool</a></li><li><a href="DrawerJs.plugins.Eraser.html">Eraser</a></li><li><a href="DrawerJs.plugins.Fullscreen.html">Fullscreen</a></li><li><a href="DrawerJs.plugins.FullscreenModeButton.html">FullscreenModeButton</a></li><li><a href="DrawerJs.plugins.ImageCrop.html">ImageCrop</a></li><li><a href="DrawerJs.plugins.ImageCropPlugin.html">ImageCropPlugin</a></li><li><a href="DrawerJs.plugins.ImageTool.html">ImageTool</a></li><li><a href="DrawerJs.plugins.Line.html">Line</a></li><li><a href="DrawerJs.plugins.MinimizeButton.html">MinimizeButton</a></li><li><a href="DrawerJs.plugins.MovableFloatingMode.html">MovableFloatingMode</a></li><li><a href="DrawerJs.plugins.OpacityControl.html">OpacityControl</a></li><li><a href="DrawerJs.plugins.OpenPopupButton.html">OpenPopupButton</a></li><li><a href="DrawerJs.plugins.OvercanvasPopup.html">OvercanvasPopup</a></li><li><a href="DrawerJs.plugins.Pencil.html">Pencil</a></li><li><a href="DrawerJs.plugins.Polygon.html">Polygon</a></li><li><a href="DrawerJs.plugins.Rectangle.html">Rectangle</a></li><li><a href="DrawerJs.plugins.ResizeTool.html">ResizeTool</a></li><li><a href="DrawerJs.plugins.ShapeBorder.html">ShapeBorder</a></li><li><a href="DrawerJs.plugins.ShapeContextMenu.html">ShapeContextMenu</a></li><li><a href="DrawerJs.plugins.SimpleWhiteEraser.html">SimpleWhiteEraser</a></li><li><a href="DrawerJs.plugins.Text.html">Text</a></li><li><a href="DrawerJs.plugins.TextAlign.html">TextAlign</a></li><li><a href="DrawerJs.plugins.TextBackgroundColor.html">TextBackgroundColor</a></li><li><a href="DrawerJs.plugins.TextColor.html">TextColor</a></li><li><a href="DrawerJs.plugins.TextDecoration.html">TextDecoration</a></li><li><a href="DrawerJs.plugins.TextFontFamily.html">TextFontFamily</a></li><li><a href="DrawerJs.plugins.TextFontSize.html">TextFontSize</a></li><li><a href="DrawerJs.plugins.TextFontStyle.html">TextFontStyle</a></li><li><a href="DrawerJs.plugins.TextFontWeight.html">TextFontWeight</a></li><li><a href="DrawerJs.plugins.TextLineHeight.html">TextLineHeight</a></li><li><a href="DrawerJs.plugins.ToggleVisibilityButton.html">ToggleVisibilityButton</a></li><li><a href="DrawerJs.plugins.Triangle.html">Triangle</a></li><li><a href="DrawerJs.plugins.Zoom.html">Zoom</a></li><li><a href="DrawerJs.plugins.ZoomViewport.html">ZoomViewport</a></li><li><a href="DrawerJs.utilPlugins.ToolbarComboBox.html">ToolbarComboBox</a></li><li><a href="DrawerJs.utilPlugins.Tooltip.html">Tooltip</a></li><li><a href="DrawerJs.utilPlugins.TooltipManager.html">TooltipManager</a></li><li><a href="DrawerToolbar.html">DrawerToolbar</a></li><li><a href="DrawerToolbarManager.html">DrawerToolbarManager</a></li><li><a href="DrawingToolsToolbar.html">DrawingToolsToolbar</a></li><li><a href="MinimizedToolbar.html">MinimizedToolbar</a></li><li><a href="OverCanvasToolbar.html">OverCanvasToolbar</a></li><li><a href="SettingsToolbar.html">SettingsToolbar</a></li><li><a href="ToolbarPlaceholder.html">ToolbarPlaceholder</a></li><li><a href="ToolOptionsToolbar.html">ToolOptionsToolbar</a></li></ul><h3>Namespaces</h3><ul><li><a href="DrawerJs.html">DrawerJs</a></li><li><a href="DrawerJs.brushes.html">brushes</a></li><li><a href="DrawerJs.options.html">options</a></li><li><a href="DrawerJs.plugins.html">plugins</a></li><li><a href="DrawerJs.util.html">util</a></li><li><a href="DrawerJs.utilPlugins.html">utilPlugins</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_iconClickHandler">_iconClickHandler</a></li><li><a href="global.html#complexity">complexity</a></li><li><a href="global.html#createPath">createPath</a></li><li><a href="global.html#getObjStyles">getObjStyles</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#initMouseupHandler">initMouseupHandler</a></li><li><a href="global.html#minX">minX</a></li><li><a href="global.html#minY">minY</a></li><li><a href="global.html#objectOptionsList">objectOptionsList</a></li><li><a href="global.html#onInput">onInput</a></li><li><a href="global.html#onMouseMove">onMouseMove</a></li><li><a href="global.html#onMouseUpSuperHandler">onMouseUpSuperHandler</a></li><li><a href="global.html#points">points</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#toObject">toObject</a></li><li><a href="global.html#toString">toString</a></li><li><a href="global.html#toSVG">toSVG</a></li><li><a href="global.html#type">type</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Sat Nov 25 2017 08:23:40 GMT+0100 (Mitteleuropäische Zeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

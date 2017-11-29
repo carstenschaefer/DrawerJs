@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: toolbars/DrawerToolbarManager.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: toolbars/DrawerToolbarManager.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>
+/**
+* Drawer toolbar  class.
+* @param {Drawer} drawerInstance
+*
+* @constructor
+*/
+var DrawerToolbarManager = function (drawer) {
+  this.drawerInstance = drawer;
+  if (!drawer) {
+    throw new Error("DrawerToolbarManager : drawer must be provided!");
+  }
+  this.toolbars = {};
+  this.toolbarPlaceholders = {};
+  this.TooltipManager = new DrawerJs.utilPlugins.TooltipManager(this.drawerInstance);
+};
+
+
+/**
+ * Appends toolbar to specified location.
+ *
+ * @param {DrawerToolbar} toolbar - toolbar to append
+ * @param {DrawerToolbar.defaultSetOfOptions} [options] - options of toolbar
+ */
+DrawerToolbarManager.prototype.addToolbar = function (toolbar, options) {
+  options = options || {};
+  var customPosition = (options.position == ToolbarPlaceholder.prototype.CUSTOM_POSITION),
+      posKey = customPosition ? options.customAnchorSelector : options.position,
+      isCustomPositionType = posKey === ToolbarPlaceholder.prototype.POPUP_POSITION || posKey === ToolbarPlaceholder.prototype.OVER_CANVAS_POSITION,
+      posTypeKey = isCustomPositionType ? ToolbarPlaceholder.prototype.POSITION_TYPE_CUSTOM : options.positionType || ToolbarPlaceholder.prototype.POSITION_TYPE_OUTSIDE,
+      placeHolderByType = this.toolbarPlaceholders[posTypeKey] &amp;&amp; this.toolbarPlaceholders[posTypeKey][posKey],
+      placeholderByKey = this.toolbarPlaceholders[posKey],
+      placeholder = placeHolderByType || placeholderByKey;
+  if (placeholder) {
+    placeholder.addToolbar(toolbar);
+  } else {
+    if (!customPosition) {
+      var messageText = "DrawerToolbarManager.addToolbar() : no placeholder exists with name '",
+          variablesText = posTypeKey + " " + posKey + " " + options.customAnchorSelector + "'";
+      this.drawerInstance.error(messageText + variablesText);
+    }
+  }
+};
+
+
+/**
+ * Setup/create all toolbars
+ */
+DrawerToolbarManager.prototype.createAllToolbars = function () {
+  var _this = this;
+
+  this.drawerInstance.trigger(this.drawerInstance.BEFORE_CREATE_TOOLBARS, [this]);
+
+  // create wrapper for toolbar
+  this._createHelperElements();
+
+  // create placeholders for toolbars
+
+  this._createToolbarsPlaceholders();
+
+  var toolbarsOptions = this.drawerInstance.options.toolbars,
+      isFullscreen = this.drawerInstance.$canvasEditContainer.hasClass('fullscreen');
+
+  var toolOptions_conf,
+      drawingTools_conf,
+      settingsToolbar_conf,
+      overCanvasToolbar_conf = toolbarsOptions.overCanvas;
+
+  if (!isFullscreen) {
+    toolOptions_conf = toolbarsOptions.toolOptions;
+    drawingTools_conf = toolbarsOptions.drawingTools;
+    settingsToolbar_conf = toolbarsOptions.settings;
+  } else {
+    var overridedValues = {
+      positionType: ToolbarPlaceholder.prototype.POSITION_TYPE_INSIDE
+    };
+    toolOptions_conf = $.extend(true,
+        {},
+        toolbarsOptions.toolOptions,
+        toolbarsOptions.toolOptions.fullscreenMode || {},
+        overridedValues);
+    drawingTools_conf = $.extend(true,
+        {},
+        toolbarsOptions.drawingTools,
+        toolbarsOptions.drawingTools.fullscreenMode || {},
+        overridedValues);
+    settingsToolbar_conf = $.extend(true,
+        {},
+        toolbarsOptions.settings,
+        toolbarsOptions.settings.fullscreenMode || {},
+        overridedValues);
+  }
+
+  // order of toolbox creation MATTERS
+  // OptionsToolbar must be created first, because in createToolsToolbar() we can activate default tool,
+  // which will trigger updates in BrushSize and BrushColor tools.
+  this.toolOptionsToolbar = new ToolOptionsToolbar(this.drawerInstance, toolOptions_conf);
+  var toolOptionsToolbarOptions = {
+    position: toolOptions_conf.position,
+    positionType: toolOptions_conf.positionType,
+    customAnchorSelector: toolOptions_conf.customAnchorSelector
+  };
+  if (toolOptions_conf.compactType === DrawerToolbar.prototype.POPUP) {
+    toolOptionsToolbarOptions.position = ToolbarPlaceholder.prototype.POPUP_POSITION;
+    toolOptionsToolbarOptions.positionType = ToolbarPlaceholder.prototype.POSITION_TYPE_CUSTOM;
+  }
+  this.addToolbar(this.toolOptionsToolbar, toolOptionsToolbarOptions);
+
+
+  // drawer tools
+  this.drawingToolsToolbar = new DrawingToolsToolbar(this.drawerInstance, drawingTools_conf);
+
+  var drawingToolsToolbarOptions = {
+    position: drawingTools_conf.position,
+    positionType: drawingTools_conf.positionType,
+    customAnchorSelector: drawingTools_conf.customAnchorSelector
+  };
+  this.addToolbar(this.drawingToolsToolbar, drawingToolsToolbarOptions);
+
+  // toolbar with close, move, options buttons
+  this.settingsToolbar = new SettingsToolbar(this.drawerInstance, settingsToolbar_conf);
+  var settingsToolbarOptions = {
+    position: settingsToolbar_conf.position,
+    positionType: settingsToolbar_conf.positionType,
+    customAnchorSelector: settingsToolbar_conf.customAnchorSelector
+  };
+  this.addToolbar(this.settingsToolbar, settingsToolbarOptions);
+
+  // Over canvas toolbar
+  this.overCanvasToolbar = new OverCanvasToolbar(this.drawerInstance, overCanvasToolbar_conf);
+  var overCanvasToolbarOptions = {
+    position: ToolbarPlaceholder.prototype.OVER_CANVAS_POSITION,
+    positionType: ToolbarPlaceholder.prototype.POSITION_TYPE_CUSTOM
+  };
+  this.addToolbar(this.overCanvasToolbar, overCanvasToolbarOptions);
+
+  // Over canvas toolbar
+  this.cropImageToolbar = new CropImageToolbar(this.drawerInstance, overCanvasToolbar_conf);
+  var cropImageToolbarOptions = {
+    position: ToolbarPlaceholder.prototype.TOP_POSITION,
+    positionType: ToolbarPlaceholder.prototype.POSITION_TYPE_INSIDE
+  };
+
+  this.addToolbar(this.cropImageToolbar, cropImageToolbarOptions);
+
+  // Minimized toolbar
+  this.minimizedToolbar = new MinimizedToolbar(this.drawerInstance);
+  var minimizedToolbarOptions = {
+    position: ToolbarPlaceholder.prototype.TOP_POSITION,
+    positionType: ToolbarPlaceholder.prototype.POSITION_TYPE_INSIDE
+  };
+  this.addToolbar(this.minimizedToolbar, minimizedToolbarOptions);
+
+  // @todo: move to other place
+  this.setToolbarButtonsSize();
+
+  // remove all toolbars on exit
+  this.drawerInstance.on(this.drawerInstance.EVENT_EDIT_STOP, function () {
+    _this.destroyAllToolbars();
+  });
+
+  this.drawerInstance.trigger(this.drawerInstance.AFTER_CREATE_TOOLBARS, [this]);
+};
+
+
+/**
+ * Creates placeholders for toolbars.
+ * All placeholders are inside this.toolbarPlaceholders.
+ * Default keys are : left, right, top, bottom
+ * Custom anchor toolbars placeholders are stored as this.toolbarPlaceholders[customAnchorSelector]
+ * If no anchor element found by selector - 'top' placeholder is used instead
+ *
+ * @private
+ */
+DrawerToolbarManager.prototype._createToolbarsPlaceholders = function() {
+  // create placeholders elements
+  this.toolbarPlaceholders['outside'] = {};
+  this.toolbarPlaceholders['inside'] = {};
+  this.toolbarPlaceholders['custom'] = {};
+
+  this.toolbarPlaceholders['outside']['top'] = new ToolbarPlaceholder(this.drawerInstance, ToolbarPlaceholder.prototype.TOP_POSITION, ToolbarPlaceholder.prototype.POSITION_TYPE_OUTSIDE);
+  this.toolbarPlaceholders['outside']['left'] = new ToolbarPlaceholder(this.drawerInstance, ToolbarPlaceholder.prototype.LEFT_POSITION, ToolbarPlaceholder.prototype.POSITION_TYPE_OUTSIDE);
+  this.toolbarPlaceholders['outside']['right'] = new ToolbarPlaceholder(this.drawerInstance, ToolbarPlaceholder.prototype.RIGHT_POSITION, ToolbarPlaceholder.prototype.POSITION_TYPE_OUTSIDE);
+  this.toolbarPlaceholders['outside']['bottom'] = new ToolbarPlaceholder(this.drawerInstance, ToolbarPlaceholder.prototype.BOTTOM_POSITION, ToolbarPlaceholder.prototype.POSITION_TYPE_OUTSIDE);
+
+  this.toolbarPlaceholders['inside']['top'] = new ToolbarPlaceholder(this.drawerInstance, ToolbarPlaceholder.prototype.TOP_POSITION, ToolbarPlaceholder.prototype.POSITION_TYPE_INSIDE);
+  this.toolbarPlaceholders['inside']['left'] = new ToolbarPlaceholder(this.drawerInstance, ToolbarPlaceholder.prototype.LEFT_POSITION, ToolbarPlaceholder.prototype.POSITION_TYPE_INSIDE);
+  this.toolbarPlaceholders['inside']['right'] = new ToolbarPlaceholder(this.drawerInstance, ToolbarPlaceholder.prototype.RIGHT_POSITION, ToolbarPlaceholder.prototype.POSITION_TYPE_INSIDE);
+  this.toolbarPlaceholders['inside']['bottom'] = new ToolbarPlaceholder(this.drawerInstance, ToolbarPlaceholder.prototype.BOTTOM_POSITION, ToolbarPlaceholder.prototype.POSITION_TYPE_INSIDE);
+
+  this.toolbarPlaceholders['custom']['canvas'] = new ToolbarPlaceholder(this.drawerInstance, ToolbarPlaceholder.prototype.OVER_CANVAS_POSITION, ToolbarPlaceholder.prototype.POSITION_TYPE_CUSTOM);
+  this.toolbarPlaceholders['custom']['popup'] = new ToolbarPlaceholder(this.drawerInstance, ToolbarPlaceholder.prototype.POPUP_POSITION, ToolbarPlaceholder.prototype.POSITION_TYPE_CUSTOM);
+  this.toolbarPlaceholders['custom']['minimized'] = new ToolbarPlaceholder(this.drawerInstance, ToolbarPlaceholder.prototype.TOP_POSITION, ToolbarPlaceholder.prototype.POSITION_TYPE_INSIDE);
+
+  // @todo: remake this!
+  var toolbarNames = ['drawingTools', 'toolOptions', 'settings'];
+
+  // look for all toolbars options and see, if there are custom positions, to create placeholder
+  for (var i = 0; i &lt; toolbarNames.length; i++) {
+    var toolbarConf = this.drawerInstance.options.toolbars[toolbarNames[i]];
+    if (toolbarConf &amp;&amp; (toolbarConf.position == ToolbarPlaceholder.prototype.CUSTOM_POSITION) &amp;&amp; (toolbarConf.customAnchorSelector)) {
+        var anchorSelector = toolbarConf.customAnchorSelector;
+        this.toolbarPlaceholders[anchorSelector] = new ToolbarPlaceholder(this.drawerInstance, ToolbarPlaceholder.prototype.CUSTOM_POSITION, null, anchorSelector);
+    }
+  }
+};
+
+/**
+ * Remove helper elements such as toolbars wrapper, etc.
+ * @private
+ */
+DrawerToolbarManager.prototype._removeHelperElements = function() {
+  if (this.drawerInstance.$toolbarsWrapper &amp;&amp; this.drawerInstance.$toolbarsWrapper.length) {
+    this.drawerInstance.$toolbarsWrapper.remove();
+  }
+  var $toolbarsWrapper = this.drawerInstance.$canvasEditContainer.find('.toolbars-wrapper');
+  if ($toolbarsWrapper &amp;&amp; $toolbarsWrapper.length) {
+    $toolbarsWrapper.remove();
+  }
+  this.drawerInstance.$toolbarsWrapper = undefined;
+};
+
+/**
+ * Create helper elements such as toolbars wrapper, etc.
+ * @private
+ */
+DrawerToolbarManager.prototype._createHelperElements = function() {
+  this._removeHelperElements();
+  var toolbarsWrapperHtml = '&lt;div class="toolbars-wrapper">&lt;/div>';
+
+  var $toolbarsWrapper = $(toolbarsWrapperHtml),
+      container = this.drawerInstance.$canvasEditContainer;
+
+  container.append($toolbarsWrapper);
+
+  this.drawerInstance.$toolbarsWrapper = $toolbarsWrapper;
+};
+
+/**
+ * Removes all toolbars.
+ */
+DrawerToolbarManager.prototype.destroyAllToolbars = function () {
+    this.settingsToolbar.remove();
+    this.drawingToolsToolbar.remove();
+    this.toolOptionsToolbar.remove();
+};
+
+
+/**
+ * Removes and then re-creates all toolbars.
+ */
+DrawerToolbarManager.prototype.resetAllToolbars = function() {
+  this.destroyAllToolbars();
+  this.createAllToolbars();
+};
+
+
+/**
+ * This method allows dynamical size adjustment of elements.
+ * Elements which needs to be resized should have two attributes:
+ *
+ * data-editable-canvas-sizeable="someNamespace",
+ * where someNamespace is unique id for the group of elements tht will be
+ * resized together.
+ *
+ * data-editable-canvas-cssrules=width,height,font-size:($v / 2.5)
+ * which provides a list of css rules on which a new size will be applied.
+ * If resulting size needs to be modififed in some way, the one could
+ * specify a function like in font-size.
+ *
+ * @param {String} namespace
+ * @param {String} newSize
+ * @private
+ */
+DrawerToolbarManager.prototype._adjustElementsSize = function (namespace, newSize) {
+  var elementsToResize =
+    $('[data-editable-canvas-sizeable=' + namespace + ']');
+
+  for (var i = 0; i &lt; elementsToResize.length; i++) {
+    var elem = elementsToResize[i];
+
+    var attributesToChange = $(elem).attr('data-editable-canvas-cssrules');
+    // if no attributes to change - skip
+    if (!attributesToChange)
+      continue;
+
+    var attributesToChangeArr = attributesToChange.split(',');
+
+    for (var a = 0; a &lt; attributesToChangeArr.length; a++) {
+      var attrName = attributesToChangeArr[a];
+      var attrVal = newSize;
+
+      if (attrName[0] == '-') {
+        attrName = attrName.substr(1);
+        attrVal = '-' + newSize;
+      }
+
+      var matches = attrName.match(/:\((.+)\)/);
+      if (matches) {
+        attrName = attrName.replace(matches[0], '');
+        var expression = matches[1];
+        expression = expression.replace('$v', attrVal);
+        var result = new Function("return " + expression)();
+        attrVal = result;
+      }
+
+      $(elem).css(attrName, attrVal + 'px');
+    }
+  }
+};
+
+
+
+/**
+ * Sets the size of buttons on all toolbars.
+ *
+ * @param [size] width and height in px
+ */
+DrawerToolbarManager.prototype.setToolbarButtonsSize = function (size) {
+  if (size) {
+    if (this.touchDevice) {
+      this.drawerInstance.options.toolbarSizeTouch = size;
+    } else {
+      this.drawerInstance.options.toolbarSize = size;
+    }
+  } else {
+    if (this.touchDevice) {
+      size = this.drawerInstance.options.toolbarSizeTouch;
+    } else {
+      size = this.drawerInstance.options.toolbarSize;
+    }
+  }
+
+  this._adjustElementsSize('toolbar-button', size);
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_anonymous_-fabric.ErasableImage.html">ErasableImage</a></li><li><a href="-_anonymous_-fabric.ErasableMixin.html">ErasableMixin</a></li><li><a href="-_anonymous_-fabric.ErasableText.html">ErasableText</a></li><li><a href="-_anonymous_-fabric.PText.html">PText</a></li><li><a href="CropImageToolbar.html">CropImageToolbar</a></li><li><a href="DrawerJs.brushes.EraserBrush.html">EraserBrush</a></li><li><a href="DrawerJs.Drawer.html">Drawer</a></li><li><a href="DrawerJs.DrawerApi.html">DrawerApi</a></li><li><a href="DrawerJs.namespace.Canvas.html">namespace.Canvas</a></li><li><a href="DrawerJs.options.LineWidth.html">LineWidth</a></li><li><a href="DrawerJs.options.OpacityOption.html">OpacityOption</a></li><li><a href="DrawerJs.options.StrokeWidth.html">StrokeWidth</a></li><li><a href="DrawerJs.plugins.ArrowOneSide.html">ArrowOneSide</a></li><li><a href="DrawerJs.plugins.ArrowTwoSide.html">ArrowTwoSide</a></li><li><a href="DrawerJs.plugins.BackgroundImageTool.html">BackgroundImageTool</a></li><li><a href="DrawerJs.plugins.BaseBrush.html">BaseBrush</a></li><li><a href="DrawerJs.plugins.BaseShape.html">BaseShape</a></li><li><a href="DrawerJs.plugins.BaseTextOptionTool.html">BaseTextOptionTool</a></li><li><a href="DrawerJs.plugins.BaseTool.html">BaseTool</a></li><li><a href="DrawerJs.plugins.BaseToolOptions.html">BaseToolOptions</a></li><li><a href="DrawerJs.plugins.BrushSize.html">BrushSize</a></li><li><a href="DrawerJs.plugins.CanvasProperties.html">CanvasProperties</a></li><li><a href="DrawerJs.plugins.Circle.html">Circle</a></li><li><a href="DrawerJs.plugins.CloseButton.html">CloseButton</a></li><li><a href="DrawerJs.plugins.ColorpickerControl.html">ColorpickerControl</a></li><li><a href="DrawerJs.plugins.ColorpickerHtml5.html">ColorpickerHtml5</a></li><li><a href="DrawerJs.plugins.ColorTool.html">ColorTool</a></li><li><a href="DrawerJs.plugins.Eraser.html">Eraser</a></li><li><a href="DrawerJs.plugins.Fullscreen.html">Fullscreen</a></li><li><a href="DrawerJs.plugins.FullscreenModeButton.html">FullscreenModeButton</a></li><li><a href="DrawerJs.plugins.ImageCrop.html">ImageCrop</a></li><li><a href="DrawerJs.plugins.ImageCropPlugin.html">ImageCropPlugin</a></li><li><a href="DrawerJs.plugins.ImageTool.html">ImageTool</a></li><li><a href="DrawerJs.plugins.Line.html">Line</a></li><li><a href="DrawerJs.plugins.MinimizeButton.html">MinimizeButton</a></li><li><a href="DrawerJs.plugins.MovableFloatingMode.html">MovableFloatingMode</a></li><li><a href="DrawerJs.plugins.OpacityControl.html">OpacityControl</a></li><li><a href="DrawerJs.plugins.OpenPopupButton.html">OpenPopupButton</a></li><li><a href="DrawerJs.plugins.OvercanvasPopup.html">OvercanvasPopup</a></li><li><a href="DrawerJs.plugins.Pencil.html">Pencil</a></li><li><a href="DrawerJs.plugins.Polygon.html">Polygon</a></li><li><a href="DrawerJs.plugins.Rectangle.html">Rectangle</a></li><li><a href="DrawerJs.plugins.ResizeTool.html">ResizeTool</a></li><li><a href="DrawerJs.plugins.ShapeBorder.html">ShapeBorder</a></li><li><a href="DrawerJs.plugins.ShapeContextMenu.html">ShapeContextMenu</a></li><li><a href="DrawerJs.plugins.SimpleWhiteEraser.html">SimpleWhiteEraser</a></li><li><a href="DrawerJs.plugins.Text.html">Text</a></li><li><a href="DrawerJs.plugins.TextAlign.html">TextAlign</a></li><li><a href="DrawerJs.plugins.TextBackgroundColor.html">TextBackgroundColor</a></li><li><a href="DrawerJs.plugins.TextColor.html">TextColor</a></li><li><a href="DrawerJs.plugins.TextDecoration.html">TextDecoration</a></li><li><a href="DrawerJs.plugins.TextFontFamily.html">TextFontFamily</a></li><li><a href="DrawerJs.plugins.TextFontSize.html">TextFontSize</a></li><li><a href="DrawerJs.plugins.TextFontStyle.html">TextFontStyle</a></li><li><a href="DrawerJs.plugins.TextFontWeight.html">TextFontWeight</a></li><li><a href="DrawerJs.plugins.TextLineHeight.html">TextLineHeight</a></li><li><a href="DrawerJs.plugins.ToggleVisibilityButton.html">ToggleVisibilityButton</a></li><li><a href="DrawerJs.plugins.Triangle.html">Triangle</a></li><li><a href="DrawerJs.plugins.Zoom.html">Zoom</a></li><li><a href="DrawerJs.plugins.ZoomViewport.html">ZoomViewport</a></li><li><a href="DrawerJs.utilPlugins.ToolbarComboBox.html">ToolbarComboBox</a></li><li><a href="DrawerJs.utilPlugins.Tooltip.html">Tooltip</a></li><li><a href="DrawerJs.utilPlugins.TooltipManager.html">TooltipManager</a></li><li><a href="DrawerToolbar.html">DrawerToolbar</a></li><li><a href="DrawerToolbarManager.html">DrawerToolbarManager</a></li><li><a href="DrawingToolsToolbar.html">DrawingToolsToolbar</a></li><li><a href="MinimizedToolbar.html">MinimizedToolbar</a></li><li><a href="OverCanvasToolbar.html">OverCanvasToolbar</a></li><li><a href="SettingsToolbar.html">SettingsToolbar</a></li><li><a href="ToolbarPlaceholder.html">ToolbarPlaceholder</a></li><li><a href="ToolOptionsToolbar.html">ToolOptionsToolbar</a></li></ul><h3>Namespaces</h3><ul><li><a href="DrawerJs.html">DrawerJs</a></li><li><a href="DrawerJs.brushes.html">brushes</a></li><li><a href="DrawerJs.options.html">options</a></li><li><a href="DrawerJs.plugins.html">plugins</a></li><li><a href="DrawerJs.util.html">util</a></li><li><a href="DrawerJs.utilPlugins.html">utilPlugins</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_iconClickHandler">_iconClickHandler</a></li><li><a href="global.html#complexity">complexity</a></li><li><a href="global.html#createPath">createPath</a></li><li><a href="global.html#getObjStyles">getObjStyles</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#initMouseupHandler">initMouseupHandler</a></li><li><a href="global.html#minX">minX</a></li><li><a href="global.html#minY">minY</a></li><li><a href="global.html#objectOptionsList">objectOptionsList</a></li><li><a href="global.html#onInput">onInput</a></li><li><a href="global.html#onMouseMove">onMouseMove</a></li><li><a href="global.html#onMouseUpSuperHandler">onMouseUpSuperHandler</a></li><li><a href="global.html#points">points</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#toObject">toObject</a></li><li><a href="global.html#toString">toString</a></li><li><a href="global.html#toSVG">toSVG</a></li><li><a href="global.html#type">type</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Sat Nov 25 2017 08:23:40 GMT+0100 (Mitteleuropäische Zeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
