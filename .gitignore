@@ -5,6 +5,7 @@ bower_components
 node_modules
 **/node_modules
 *.iml
+dist
 
 drawerJs.v12.suo
 obj/Release/DrawerJs.njsprojResolveAssemblyReference.cache
@@ -13,3 +14,4 @@ obj/Release/DrawerJs.njsprojResolveAssemblyReference.cache
 
 .jshintrc
 .editorconfig
+npm-debug.log
