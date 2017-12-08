@@ -117,7 +117,7 @@ Then the link below will work.
 
 Please look at [CanvasElement documentation](DrawerJs.CanvasElement.html) for options description.
 
-## Try It
+## Try Demo
 
 [DrawerJs Standard Demo](https://carstenschaefer.github.io/DrawerJs/examples/standalone/)
 
