@@ -117,10 +117,12 @@ Then the link below will work.
 
 Please look at [CanvasElement documentation](DrawerJs.CanvasElement.html) for options description.
 
-## Try it!
+## Try It
 
 [DrawerJs Standard Demo](https://carstenschaefer.github.io/DrawerJs/examples/standalone/)
+
 [DrawerJs Demo with flexible Toolbar](https://carstenschaefer.github.io/DrawerJs/examples/toolbar-position/)
+
 [DrawerJs Standalone demonstrating Public API](https://carstenschaefer.github.io/DrawerJs/examples/api/)
 
 
