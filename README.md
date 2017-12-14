@@ -10,7 +10,7 @@ Here you will find more informations about features and a short faq: [DrawerJs](
 
 And here you'll find some examples and you can test it live: [DrawerJs on GitHub](https://carstenschaefer.github.io/DrawerJs/)
 
-Here you will find a detailed documentation about the usage and its configuration: [DrawerJs-Docs](https://www.drawerjs.com/documentation)
+Here you will find a detailed documentation about the usage and its configuration: [DrawerJs-Docs](https://github.com/carstenschaefer/DrawerJs/wiki)
 
 ## Release Notes
 
