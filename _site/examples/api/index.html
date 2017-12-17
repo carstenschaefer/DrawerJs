@@ -72,6 +72,13 @@
             margin-top: 10px;
             margin-bottom: 15px;
         }
+        .btn {
+            border-radius: 1px;
+            margin: 1px;
+        }
+        input[type="input"] {
+            margin-left: 2px;
+        }
     </style>
 </head>
 
@@ -449,7 +456,7 @@
                  </div>
              </div>
 
-             <div class="api-block">
+             <!-- <div class="api-block">
                  <div class="api-subsection">
                      <div>
                          <label style="width:20%;"> left: </label>
@@ -459,11 +466,11 @@
 
                      <div id="active-color-btn" class="btn btn-success" onclick="onSetActiveColorClick()"> setActiveColor()</div>
                  </div>
-             </div>
+             </div> -->
 
             <div id="canvas-editor" style="position: relative;">
                 <p style="font-size: 20px; font-weight:600; padding-top: 300px; padding-left: 550px;">
-                    here goes some dummy content
+                    <!-- here goes some dummy content -->
                 </p>
             </div>
 
@@ -674,7 +681,7 @@
             debug: true,
 			transparentBackground: true,
 			align: 'floating'  //one of 'left', 'right', 'center', 'inline', 'floating'
-        }, 600, 600);
+        }, 665, 270);
 
         $('#canvas-editor').append(window.drawer.getHtml());
         window.drawer.onInsert();
