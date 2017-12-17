@@ -1,0 +1,86 @@
+li.editable-canvas-color-redactor {
+    padding-left: 10px !important;
+    width: auto !important;
+}
+
+/*li.editable-canvas-color-redactor span.toolbar-label {
+    display: inline-block;
+    width: auto;
+    margin-right: 10px;
+    float: left;
+    vertical-align: middle;
+    padding-top: 9px;
+}
+*/
+
+li.editable-canvas-color-redactor span.color-dropdown {
+    position: absolute;
+    left:0px;
+    top:30px;
+    width: 290px;
+}
+
+li.editable-canvas-color-redactor span.color-indicator {
+    display: inline-block;
+    width: 32px;
+    position: relative;
+    top: 0px;
+    height: 32px;
+    background-color: white;
+}
+
+.toolbar-topRight li.editable-canvas-color-redactor span.color-dropdown {
+    right: 0;
+    left: auto;
+}
+
+
+
+ul.editable-canvas-toolbar li.editable-canvas-opacity-label {
+    width: auto;
+    padding-right: 3px;
+    padding-left: 3px;
+}
+
+ul.editable-canvas-toolbar li.editable-canvas-opacity {
+    width: auto;
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
+
+li.editable-canvas-opacity .editable-canvas-opacity-indicator{
+    width: 50px;
+    display: inline-block;
+    margin-right:  5px;
+}
+
+
+
+li.editable-canvas-opacity .editable-canvas-opacity-input {
+    display: inline-block;
+    vertical-align: top;
+    width: 100px;
+    margin-left: 7px;
+    margin-right: 7px;
+    position: relative;
+    right: 0;
+}
+
+.popup-content .editable-canvas-toolbar li.editable-canvas-opacity {
+    width: 100%;
+    min-width: 100%;
+    margin: 0;
+    padding: 0 10px;
+    box-sizing: border-box;
+    text-align: right;
+}
+
+.popup-content li.editable-canvas-opacity .editable-canvas-opacity-input{
+    float: right;
+}
+
+.popup-content .editable-canvas-toolbar li.editable-canvas-opacity .editable-canvas-opacity-indicator {
+    float: none;
+    text-align: left;
+}

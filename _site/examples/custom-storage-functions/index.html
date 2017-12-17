@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script src="../../lib/jquery-1.10.1.min.js"></script>
+    <script src="../../lib/jquery-migrate-1.2.1.min.js"></script>
+
+    <link rel="stylesheet" href="../../assets/bootstrap.min.css"/>
+    <link rel="stylesheet" href="../../assets/font-awesome.min.css">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+
+    <link rel="stylesheet" href="../../dist/drawerJs.css"/>
+    <script src="../../dist/drawerJs.standalone.js"></script>
+</head>
+
+<body>
+<div class="container">
+    <div class="panel panel-default">
+        <div class="panel-heading"><h3>DrawerJs demo page with persistent state.</h3></div>
+        <div class="panel-body">
+            <p>Persistency is achieved by setting custom functions to
+                <code>loadCanvasData</code>, <code>saveCanvasData</code>,
+                <code>loadImageData</code>, <code>saveImageData</code>
+                which proxy all calls to localStorage.
+            </p>
+            <p>Try to draw something and reload a page.</p>
+            <div id="canvas-editor"></div>
+        </div>
+    </div>
+</div>
+<script>
+    var drawerPlugins = [
+        // Drawing tools
+        'Pencil',
+        'Eraser',
+        'Text',
+        'Line',
+        'ArrowOneSide',
+        'ArrowTwoSide',
+        'Triangle',
+        'Rectangle',
+        'Circle',
+        'Polygon',
+
+        // Drawing options
+        //'ColorHtml5',
+        'Color',
+        'ShapeBorder',
+        'BrushSize',
+        'OpacityOption',
+        'LineWidth',
+        'StrokeWidth',
+
+        'Resize',
+        'ShapeContextMenu',
+
+        'CloseButton',
+        'OvercanvasPopup',
+        'OpenPopupButton',
+        'MinimizeButton',
+        'ToggleVisibilityButton',
+
+        'TextLineHeight',
+        'TextAlign',
+
+        'TextFontFamily',
+        'TextFontSize',
+        'TextFontWeight',
+        'TextFontStyle',
+        'TextDecoration',
+        'TextColor',
+        'TextBackgroundColor'
+    ];
+
+    var saveContent = function(){
+        var html = $('#canvas-editor').html();
+        localStorage.setItem('html', html);
+        localStorage.setItem('canvas_id', canvas.id);
+    };
+
+    var loadContent = function(){
+        var html = localStorage.getItem('html');
+        var canvasId = localStorage.getItem('canvas_id');
+        if(html && canvasId){
+            $('#canvas-editor').html(html);
+            canvas.id = canvasId;
+            return true;
+        }
+
+        return false;
+    };
+
+    var canvas = null;
+
+    $(document).ready(function () {
+        canvas = new DrawerJs.Drawer(null, {
+            defaultImageUrl: '/examples/redactor/images/drawer.jpg',
+            plugins: drawerPlugins,
+            contentConfig: {
+                saveInHtml: false,
+                saveCanvasData: function(canvasId, canvasData){
+                    localStorage.setItem('canvas_' + canvasId, JSON.stringify(canvasData));
+                    saveContent();
+                },
+                loadCanvasData: function(canvasId){
+                    return localStorage.getItem('canvas_' + canvasId);
+                },
+                saveImageData: function(canvasId, imageData){
+                    localStorage.setItem('image_' + canvasId, JSON.stringify(imageData));
+                },
+                loadImageData: function(canvasId){
+                    return localStorage.getItem('image_' + canvasId);
+                }
+            }
+        }, 600, 600);
+
+        if(!loadContent()){
+            $('#canvas-editor').append(canvas.getHtml());
+        }
+
+        canvas.onInsert();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+<!-- Begin Jekyll SEO tag v2.3.0 -->
+<title>Eraser | DrawerJs</title>
+<meta property="og:title" content="Eraser" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A customizable WYSIWYG HTML canvas editor." />
+<meta property="og:description" content="A customizable WYSIWYG HTML canvas editor." />
+<link rel="canonical" href="http://localhost:4000/src/plugins/brush-eraser/" />
+<meta property="og:url" content="http://localhost:4000/src/plugins/brush-eraser/" />
+<meta property="og:site_name" content="DrawerJs" />
+<script type="application/ld+json">
+{"name":null,"description":"A customizable WYSIWYG HTML canvas editor.","author":null,"@type":"WebPage","url":"http://localhost:4000/src/plugins/brush-eraser/","publisher":null,"image":null,"headline":"Eraser","dateModified":null,"datePublished":null,"sameAs":null,"mainEntityOfPage":null,"@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=ccd7b9808535c5bde7eeb6b685f0886d902663ba">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>DrawerJs</h1>
+        <p>A customizable WYSIWYG HTML canvas editor.</p>
+
+        
+          <p class="view"><a href="http://github.com/carstenschaefer/DrawerJs">View the Project on GitHub <small></small></a></p>
+        
+
+        
+
+        
+      </header>
+      <section>
+
+      <h1 id="eraser">Eraser</h1>
+
+<p>Usually vector drawing tools don’t have an eraser.</p>
+
+<p>DrawerJS has.</p>
+
+<p>Few approaches were made to make eraser tool work as it should and as user expects it to work.</p>
+
+<p>First approach took ~2 weeks to implement and didn’t show good results. Approach was based on geometry calculations library and was doing a lot of calculations.</p>
+
+<p>Logic was: when left mouse key is pressed and user moves mouse through shape, get shape’s polygon coordinates along with mouse polygon (simple small square) and pass them to polygon substraction function. <a href="http://mathoverflow.net/questions/111296/subtract-rectangle-from-polygon">More info</a></p>
+
+<p>It was very slow even on desctop processors and was abandoned.</p>
+
+<p>New algorhytm was invented:</p>
+
+<h2 id="clipping-mask-based-eraser">Clipping mask based eraser</h2>
+
+<p>This technique is based on a simple drawing method included in fabric.js.</p>
+
+<p>The idea is simple: eraser is a simple brush with white color. It draws the same way a <code class="highlighter-rouge">pencil</code> tool draws.</p>
+
+<p>But when user finishes erasing we copy resulting eraser paths and add them to all shapes that were affected.</p>
+
+<p>So, any shape in DrawerJS has an array of eraser paths. Actually we have <a href="https://g-tac.visualstudio.com/_git/DrawerJs?path=%2Fsrc%2Ffabricjs_extensions%2FErasableObject.js&amp;version=GBmaster&amp;_a=contents&amp;line=8&amp;lineStyle=plain&amp;lineEnd=8&amp;lineStartColumn=12&amp;lineEndColumn=26">ErasableObject</a> 
+and <a href="https://g-tac.visualstudio.com/_git/DrawerJs?path=%2Fsrc%2Ffabricjs_extensions%2FErasableMixin.js&amp;version=GBmaster&amp;_a=contents&amp;line=13&amp;lineStyle=plain&amp;lineEnd=13&amp;lineStartColumn=12&amp;lineEndColumn=25">ErasableMixin</a>.</p>
+
+<p>When a shape gets rendered, it also renders all eraser paths attached to it and uses <a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation">globalCompositeOperation</a> 
+to change the way eraser paths will be rendered.</p>
+
+
+      </section>
+      <footer>
+        
+        <p>This project is maintained by <a href="http://github.com/carstenschaefer">carstenschaefer</a></p>
+        
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="/assets/js/scale.fix.js"></script>
+
+
+  
+  </body>
+</html>

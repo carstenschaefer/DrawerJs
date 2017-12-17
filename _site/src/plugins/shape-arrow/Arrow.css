@@ -1,0 +1,7 @@
+.toolbar-button .fa.fa-long-arrow-right ,
+.toolbar-button .fa.fa-arrows-h {
+    -webkit-transform: rotate(-45deg);
+    -ms-transform: rotate(-45deg);
+    -moz-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+}

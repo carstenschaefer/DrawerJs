@@ -1,0 +1,21 @@
+.toolbar-button .fa-line {
+    width: 14px;
+    -ms-transform: rotate(24deg);
+    -webkit-transform: rotate(24deg);
+    -moz-transform: rotate(24deg);
+    transform: rotate(24deg);
+}
+.toolbar-button  .fa-line:before {
+    position: relative;
+    line-height: 10px;
+    top: 2px;
+    content: "/";
+    font-size: 19px !important;
+    font-weight: bold;
+}
+
+.drawer-tool-mouse-tooltip .fa-line {
+    position: relative;
+    left: 5px;
+    top: 2px;
+}

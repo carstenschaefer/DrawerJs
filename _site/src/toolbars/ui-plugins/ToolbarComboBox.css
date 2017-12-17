@@ -1,0 +1,235 @@
+/*
+ * jQuery Editable Select
+ * https://github.com/shaoyun/jquery-editable-select
+ *
+ * Copyright (c) 2016 Shaoyun
+ * Licensed under the GPL license.
+ */
+.toolbar-combobox-wrapper {
+    border: 1px solid #E5E5E5;
+    width: auto;
+    min-width: 120px;
+    outline: none;
+    color: #444;
+    margin: 2px auto;
+    display: inline-block;
+    box-sizing: border-box;
+
+    position: relative;
+}
+
+.toolbar-placeholder-bottom .toolbar-combobox-wrapper {
+    position: absolute;
+    bottom: 100%;
+    top: auto;
+}
+
+.toolbar-combobox-wrapper > .selected {
+    float: left;
+    height: 28px;
+    line-height: 20px;
+    display: table;
+    width: 100%;
+    cursor: pointer;
+
+    transition: background-color 400ms linear;
+}
+
+.toolbar-combobox-wrapper > .selected span {
+    display: table-cell;
+    vertical-align: middle;
+    padding: 0 13px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    font-size: 14px;
+}
+
+/****/
+
+.toolbar-combobox-wrapper.prevent-highlight {
+
+}
+
+.toolbar-combobox-wrapper.option-value-inherited > .selected {
+    background-color: #dcdcdc;
+}
+
+.toolbar-combobox-wrapper.option-value-inherited.button-mode > .selected {
+
+}
+
+.toolbar-combobox-wrapper.option-value-invalid > .selected {
+
+}
+
+.toolbar-combobox-wrapper.option-value-invalid.button-mode > .selected {
+
+}
+
+.toolbar-combobox-wrapper.option-value-multiple > .selected {
+    background-color: #efb5b5;
+}
+
+.toolbar-combobox-wrapper.option-value-multiple.button-mode > .selected {
+
+}
+
+/****/
+
+.toolbar-combobox-wrapper.hightlight-red > .selected .ui-button {
+    background: white;
+}
+
+.toolbar-combobox-wrapper .dropdown-box {
+    border-top: none;
+    position: relative;
+    box-sizing: border-box;
+    z-index: 2;
+    background-color: #fff;
+    padding: 5px 0;
+    top: 29px;
+
+    /*border: 1px solid #E5E5E5;*/
+    /*left: -1px;*/
+    /*right: -1px;*/
+}
+
+.toolbar-combobox-wrapper:not(.button-mode) .toolbar-item-description {
+    display: inline-block;
+}
+
+.toolbar-combobox-wrapper .inputbox {
+    clear: both;
+    margin: 5px 5px 0;
+    display: none;
+}
+
+.toolbar-combobox-wrapper.edit-mode .inputbox {
+    display: block;
+}
+
+.toolbar-combobox-wrapper .inputbox input[type=text] {
+    border: 1px solid #E5E5E5;
+    width: 100%;
+    padding: 5px 5px;
+    outline: none;
+}
+
+.toolbar-combobox-wrapper .option-list {
+    clear: both;
+    list-style: none;
+    padding: 0;
+    -webkit-margin-before: 0;
+    -webkit-margin-after: 0;
+    -webkit-margin-start: 0;
+    -webkit-margin-end: 0;
+    -webkit-padding-start: 0;
+    margin-top: 5px;
+
+    width: 100%;
+    max-height: 195px;
+    position: relative;
+    overflow-y: visible;
+    overflow-x: auto;
+    display: inline-block;
+}
+
+.toolbar-combobox-wrapper .option-list .option-item {
+    margin: 2px 5px;
+    line-height: 30px;
+    cursor: pointer;
+    padding: 0 8px;
+    font-size: 12px;
+    color: #333;
+    display: block;
+}
+
+.toolbar-combobox-wrapper .option-list .option-item .option-item-text{
+    display: inline-block;
+    white-space: nowrap;
+}
+
+
+.toolbar-combobox-wrapper .option-list .option-item:first-letter {
+    text-transform: uppercase;
+}
+
+.toolbar-combobox-wrapper .option-list .option-item:not(.selected):hover {
+    background-color: #EEEEEE;
+}
+
+.toolbar-combobox-wrapper .option-list .option-item.selected {
+    background-color: #d9d9d9;
+}
+
+.toolbar-combobox-wrapper .ui-button {
+    border-left: 1px solid #E5E5E5;
+    float: right;
+    display: table-cell;
+    cursor: pointer;
+    height: 100%;
+    color: #999999;
+    width: 40px;
+    text-align: center;
+    background-color: #fff;
+}
+
+.toolbar-combobox-wrapper .ui-button i {
+    margin-top: 7px;
+}
+
+.toolbar-combobox-wrapper:focus {
+    border-color: #999999;
+}
+
+.toolbar-combobox-wrapper:focus .dropdown-box {
+    border-color: #999999;
+}
+
+.toolbar-combobox-wrapper:focus .ui-button {
+    border-left: none;
+}
+
+.toolbar-combobox-wrapper.focus {
+    border-color: #999999;
+}
+
+.toolbar-combobox-wrapper.focus .dropdown-box {
+    border-color: #999999;
+}
+
+.toolbar-combobox-wrapper.focus .ui-button {
+    border-left: none;
+}
+
+.toolbar-combobox-wrapper.button-mode {
+
+}
+
+.toolbar-item-wrapper:not(.toolbar-button-item)  .toolbar-combobox-wrapper .dropdown-box.collapsed,
+.toolbar-item-wrapper:not(.toolbar-button-item)  .toolbar-combobox-wrapper.collapsed .dropdown-box{
+    display: none;
+}
+
+/***********/
+
+.toolbar-button-item .toolbar-combobox-wrapper {
+    margin: 0 0 -1px;
+}
+
+.toolbar-button-item .toolbar-combobox-wrapper > .selected,
+.combobox-cloned.toolbar-combobox-wrapper > .selected{
+    display: none;
+}
+
+.toolbar-button-item .toolbar-combobox-wrapper > .dropdown-box,
+.combobox-cloned.toolbar-combobox-wrapper > .dropdown-box{
+    top: 0;
+    display: block;
+}
+
+.toolbar-button-item .collapsed .toolbar-combobox-wrapper:not(.combobox-cloned) {
+    display: none;
+}

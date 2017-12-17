@@ -1,0 +1,39 @@
+.editable-canvas-shape-context-menu {
+    position: absolute;
+    background: white;
+    box-shadow: 0 10px 50px rgba(0,0,0,0.15);
+    z-index: 99999;
+    width: 200px;
+    height:auto !important;
+    text-align: left;
+    padding:0;
+}
+
+.editable-canvas-shape-context-menu li a {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.editable-canvas-shape-context-menu li {
+    width: 100%;
+    list-style-type:none;
+}
+
+.editable-canvas-shape-context-menu li a {
+    text-align: left;
+    display: inline-block;
+    margin: 0;
+    width: 100%;
+    padding: 10px 20px;
+    cursor:pointer;
+}
+
+.editable-canvas-shape-context-menu li a:hover {
+    text-decoration: none;
+    background: #1f78d8;
+    color: white;
+}

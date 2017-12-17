@@ -1,0 +1,46 @@
+.editable-canvas-text-option {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.editable-canvas-text-option select{
+    margin: 7px auto;
+}
+
+ul.editable-canvas-toolbar li.editable-canvas-fontfamily {
+    cursor: pointer;
+    width: auto;
+    height: 100%;
+    position: relative;
+}
+
+ul.editable-canvas-toolbar li.editable-canvas-fontfamily .fonts-dropdown {
+    position: absolute;
+    left: 0px;
+    top: 30px;
+    width: 100%;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.15);
+    z-index: 99999;
+    background: white;
+    width: 300px;
+    height: auto !important;
+    padding-left: 5px !important;
+}
+
+ul.editable-canvas-toolbar li.editable-canvas-fontfamily .fonts-dropdown li {
+    display: block;
+    background: white;
+    text-align: left;
+    float: left;
+    width: auto;
+    height: auto;
+}
+
+ul.editable-canvas-toolbar li.editable-canvas-fontfamily .fonts-dropdown li a {
+    padding: 5px;
+}
+
+ul.editable-canvas-toolbar.toolbar-topRight li.editable-canvas-fontfamily .fonts-dropdown {
+    left: auto;
+    right: 0;
+}

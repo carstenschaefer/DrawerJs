@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+<!-- Begin Jekyll SEO tag v2.3.0 -->
+<title>Directories | DrawerJs</title>
+<meta property="og:title" content="Directories" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A customizable WYSIWYG HTML canvas editor." />
+<meta property="og:description" content="A customizable WYSIWYG HTML canvas editor." />
+<link rel="canonical" href="http://localhost:4000/ARCHITECTURE-DIRECTORIES.html" />
+<meta property="og:url" content="http://localhost:4000/ARCHITECTURE-DIRECTORIES.html" />
+<meta property="og:site_name" content="DrawerJs" />
+<script type="application/ld+json">
+{"name":null,"description":"A customizable WYSIWYG HTML canvas editor.","author":null,"@type":"WebPage","url":"http://localhost:4000/ARCHITECTURE-DIRECTORIES.html","publisher":null,"image":null,"headline":"Directories","dateModified":null,"datePublished":null,"sameAs":null,"mainEntityOfPage":null,"@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=ccd7b9808535c5bde7eeb6b685f0886d902663ba">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>DrawerJs</h1>
+        <p>A customizable WYSIWYG HTML canvas editor.</p>
+
+        
+          <p class="view"><a href="http://github.com/carstenschaefer/DrawerJs">View the Project on GitHub <small></small></a></p>
+        
+
+        
+
+        
+      </header>
+      <section>
+
+      <h1 id="directories">Directories</h1>
+
+<ul>
+  <li>
+    <p><code class="highlighter-rouge">assets</code></p>
+
+    <p>all resources used by a project. Fonts/images/cursors etc.</p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">examples</code></p>
+
+    <p>Quick setup quides, how-tos and other examples.</p>
+
+    <ul>
+      <li>
+        <p><code class="highlighter-rouge">api</code></p>
+
+        <p>Example of working with DrawerJS through it’s programming interface</p>
+      </li>
+      <li>
+        <p><code class="highlighter-rouge">assets</code></p>
+
+        <p>Resources for example pages. Images/fonts etc.</p>
+      </li>
+      <li>
+        <p><code class="highlighter-rouge">custom-storage-functions</code></p>
+
+        <p>Example which shows a way to override DrawerJS’ functions for storage and retrieving canvas data. Can be useful when embedding DrawerJS into mobile app, to provide device’s native storage.</p>
+      </li>
+      <li>
+        <p><code class="highlighter-rouge">redactor</code></p>
+
+        <p>Example shows DrawerJS usage as a plugin in <a href="https://imperavi.com/redactor/">Redactor editor</a></p>
+      </li>
+      <li>
+        <p><code class="highlighter-rouge">standalone</code></p>
+
+        <p>Example shows simplest way of using DrawerJS in a html page.</p>
+      </li>
+      <li>
+        <p><code class="highlighter-rouge">toolbar-position</code></p>
+
+        <p>Example shows configuration options for toolbar positions.</p>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">lib</code></p>
+
+    <p>libraries used by DrawerJS. We prefer storing libraries in files instead of package managers because in such was we can always be sure we have a stable and tested version.</p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">src</code></p>
+
+    <p>Source code directory.</p>
+
+    <ul>
+      <li>
+        <p><code class="highlighter-rouge">fabricjs_extensions</code></p>
+
+        <p>Custom objects that extend fabricjs objects. If one needs a shape which is not included in fabricjs (like Arrow), this is a place for it.</p>
+      </li>
+      <li>
+        <p><code class="highlighter-rouge">plugins</code></p>
+
+        <p>All DrawerJS plugins. [More on plugins system]</p>
+      </li>
+      <li>
+        <p><code class="highlighter-rouge">toolbars</code></p>
+
+        <p>Toolbars management code became so huge so it was extracted to separate folder. Here one will find classes for toolbars as well as toolbar managers.</p>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<p># File structure</p>
+
+<p>We have a file [Globals.js] which defines DrawerJS namespace as well as some child namespaces like <code class="highlighter-rouge">DrawerJS.plugins</code>.</p>
+
+<p>We use Self-Invoking functions to scope file’s namespace.</p>
+
+<p>Any file should follow this pattern:</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">$</span><span class="p">,</span> <span class="nx">drawer</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// receive passed globals </span>
+     <span class="c1">// module code</span>
+ <span class="p">}(</span><span class="nx">jQuery</span><span class="p">,</span> <span class="nx">DrawerJS</span><span class="p">));</span>  <span class="c1">// pass objects from window global namespace</span>
+</code></pre></div></div>
+
+<p>All files are concantenated into one with <code class="highlighter-rouge">Grunt</code>.</p>
+
+
+
+      </section>
+      <footer>
+        
+        <p>This project is maintained by <a href="http://github.com/carstenschaefer">carstenschaefer</a></p>
+        
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="/assets/js/scale.fix.js"></script>
+
+
+  
+  </body>
+</html>

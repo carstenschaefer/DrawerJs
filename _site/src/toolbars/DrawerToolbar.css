@@ -1,0 +1,737 @@
+.editable-canvas-toolbar,
+.editable-canvas-toolbar ul {
+    margin: 0;
+    padding: 0;
+    position: relative;
+    z-index: 1060 !important;
+    box-sizing: border-box;
+    background: inherit;
+    user-select: none;
+}
+
+
+.editable-canvas-toolbar {
+    background: white;
+    box-shadow: 0px -10px 40px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgb(240, 240, 240);
+}
+
+.editable-canvas-toolbar ul,
+.editable-canvas-toolbar .toolbar-dropdown-block{
+    z-index: 202 !important;
+}
+
+.editable-canvas-toolbar .toolbar-content-wrapper {
+    display: inline-block;
+    position: relative;
+    left: 0;
+    top:  0;
+    transition: left 0.2s ease-out, top 0.2s ease-out;
+}
+
+.editable-canvas-toolbar.toolbar-horizontal {
+    width: 100%;
+}
+
+.editable-canvas-toolbar.toolbar-vertical {
+    height: 100%;
+}
+
+.popup-content-wrapper .popup-content .editable-canvas-toolbar{
+    overflow: visible;
+}
+
+
+.editable-canvas-toolbar.toolbar-multiline.toolbar-horizontal .toolbar-content-wrapper {
+    width: 100%;
+    height: auto;
+    white-space: normal;
+}
+
+.editable-canvas-toolbar.toolbar-multiline.toolbar-vertical .toolbar-content-wrapper {
+    width: 100%;
+    height: auto;
+    white-space: normal;
+}
+
+
+.editable-canvas-toolbar.toolbar-scrollable.toolbar-horizontal .toolbar-content-wrapper {
+    width: auto;
+    height: 100%;
+    white-space: nowrap;
+}
+
+.editable-canvas-toolbar.toolbar-scrollable.toolbar-vertical .toolbar-content-wrapper {
+    width: 100%;
+    height: auto;
+    white-space: normal;
+}
+
+.editable-canvas-toolbar > ul > li,
+.editable-canvas-toolbar > li,
+li.toolbar-item {
+    display: inline-block;
+    vertical-align: top;
+    list-style: none;
+    text-align: start;
+    background: white;
+    white-space: nowrap;
+}
+
+.toolbar-button {
+    list-style-type: none;
+    width: 32px;
+    min-width: 32px;
+    /*height: 32px;*/
+    display: inline-block;
+    vertical-align: top;
+    text-align: center;
+    background: white;
+}
+
+.toolbar-button a {
+    color: #333;
+    height: 100%;
+    width: 100%;
+    display: inline-block;
+    line-height: 32px;
+    text-align: center;
+}
+
+.toolbar-button a:focus {
+    outline: none;
+}
+
+.toolbar-button a i {
+    pointer-events: none;
+}
+
+.drawer-instance-container:not(.touch) .toolbar-button:not(.dragging):not(.disabled) a:hover {
+    color: white;
+    background: #1f78d8;
+}
+
+.toolbar-button.disabled:not(.dragging) a {
+    color: white;
+    background-color: #dcdcdc;
+}
+
+.toolbar-button a.active {
+    outline: none;
+    background-color: #1f78d8;
+    color: #fff;
+}
+
+.submenu-wrapper {
+    position: absolute;
+    width: 35px;
+    z-index: 1100;
+    box-shadow: 0 0 10px grey;
+    background-color: white;
+    pointer-events: auto;
+}
+
+.submenu-wrapper .toolbar-button {
+    width: 35px;
+}
+
+.toolbar-content-wrapper .submenu-wrapper {
+    display: none;
+}
+
+.group-items-container {
+    padding: 0;
+    white-space: normal;
+}
+
+
+.editable-canvas-toolbar .btn-delete-canvas a {
+    color: #B32525;
+}
+
+
+.editable-canvas-toolbar.toolbar-scrollable {
+    overflow: hidden;
+}
+
+.editable-canvas-toolbar.toolbar-horizontal {
+    width: 100%;
+    display: block;
+}
+
+.editable-canvas-toolbar.toolbar-vertical .toolbar-content-wrapper,
+.editable-canvas-toolbar.toolbar-horizontal .toolbar-content-wrapper{
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-justify-content: flex-start;
+    -ms-flex-pack: start;
+    justify-content: flex-start;
+    -webkit-align-content: flex-start;
+    -ms-flex-line-pack: start;
+    align-content: flex-start;
+    -webkit-align-items: flex-start;
+    -ms-flex-align: start;
+    align-items: flex-start;
+}
+
+.editable-canvas-toolbar.toolbar-multiline .toolbar-content-wrapper,
+.popup-content-wrapper .popup-content .editable-canvas-toolbar .toolbar-content-wrapper{
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+
+.editable-canvas-toolbar.toolbar-scrollable .toolbar-content-wrapper{
+    -webkit-flex-wrap: nowrap;
+    -ms-flex-wrap: nowrap;
+    flex-wrap: nowrap;
+}
+
+
+.editable-canvas-toolbar.toolbar-horizontal .toolbar-content-wrapper {
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    flex-direction: row;
+
+}
+
+.editable-canvas-toolbar.toolbar-vertical .toolbar-content-wrapper {
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
+}
+
+.editable-canvas-toolbar.toolbar-horizontal.empty-toolbar {
+    height: 0;
+}
+
+.editable-canvas-toolbar.toolbar-vertical {
+    width: 35px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.editable-canvas-toolbar.toolbar-vertical.empty-toolbar {
+    width: 0;
+}
+
+.editable-canvas-toolbar.toolbar-horizontal>li {
+    height: 100%;
+}
+
+.toolbars-wrapper {
+    position: absolute;
+    pointer-events: none;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.toolbar-placeholder {
+    position: absolute;
+    padding-left: 0;
+    z-index: 1000;
+    margin: 0;
+    box-sizing: border-box;
+    pointer-events: auto;
+}
+
+.toolbar-placeholder:not(.toolbar-placeholder-inside) {
+    z-index: 1001;
+}
+
+.toolbar-placeholder-top {
+    height: auto;
+    right: 0;
+    left: 0;
+    top: -2px;
+    -webkit-transform: translateY(-100%);
+    -moz-transform: translateY(-100%);
+    -ms-transform: translateY(-100%);
+    transform: translateY(-100%);
+}
+
+
+.toolbar-placeholder-bottom {
+    height: auto;
+    right: 0;
+    left: 0;
+    bottom: -12px;
+    -webkit-transform: translateY(100%);
+    -moz-transform: translateY(100%);
+    -ms-transform: translateY(100%);
+    transform: translateY(100%);
+}
+
+.toolbar-placeholder-left {
+    width: auto;
+    left: -2px;
+    bottom: 0;
+    top: 0;
+    -webkit-transform: translateX(-100%);
+    -moz-transform: translateX(-100%);
+    -ms-transform: translateX(-100%);
+    transform: translateX(-100%);
+}
+
+.toolbar-placeholder-right {
+    width: auto;
+    right: -2px;
+    bottom: 0;
+    top: 0;
+    -webkit-transform: translateX(100%);
+    -moz-transform: translateX(100%);
+    -ms-transform: translateX(100%);
+    transform: translateX(100%);
+}
+
+.toolbar-placeholder-top.toolbar-placeholder-inside {
+    top: 0;
+    -webkit-transform: none;
+    -moz-transform: none;
+    -ms-transform: none;
+    transform: none;
+    margin-top: 0;
+}
+
+.toolbar-placeholder-bottom.toolbar-placeholder-inside {
+    bottom: 0;
+    -webkit-transform: none;
+    -moz-transform: none;
+    -ms-transform: none;
+    transform: none;
+    margin-bottom: 0;
+    z-index: 1002;
+}
+
+.toolbar-placeholder-left.toolbar-placeholder-inside {
+    left: 0;
+    -webkit-transform: none;
+    -moz-transform: none;
+    -ms-transform: none;
+    transform: none;
+    margin-left: 0;
+    z-index: 1001;
+}
+
+.toolbar-placeholder-right.toolbar-placeholder-inside {
+    right: 0;
+    -webkit-transform: none;
+    -moz-transform: none;
+    -ms-transform: none;
+    transform: none;
+    margin-right: 0;
+    z-index: 1001;
+}
+
+.toolbar-placeholder.toolbar-placeholder-inside {
+    overflow: hidden;
+    pointer-events: none;
+    height: 100%;
+    width: 100%;
+}
+
+.toolbar-placeholder.toolbar-placeholder-inside .editable-canvas-toolbar {
+    overflow: visible;
+    position: absolute;
+    pointer-events: auto;
+}
+
+.toolbar-placeholder-top.toolbar-placeholder-inside  .editable-canvas-toolbar{
+    top: 0;
+    left:0;
+    right:0;
+}
+
+.toolbar-placeholder-bottom.toolbar-placeholder-inside  .editable-canvas-toolbar{
+    bottom: 0;
+    left:0;
+    right:0;
+}
+
+.toolbar-placeholder-left.toolbar-placeholder-inside  .editable-canvas-toolbar{
+    bottom: 0;
+    left:0;
+    top: 0;
+}
+
+.toolbar-placeholder-right.toolbar-placeholder-inside  .editable-canvas-toolbar{
+    bottom: 0;
+    right:0;
+    top: 0;
+}
+
+.toolbar-placeholder-overcanvas {
+    z-index: 1100;
+    top: 0;
+    left: 0;
+}
+
+.toolbar-placeholder-overcanvas .editable-canvas-toolbar{
+    box-shadow: none;
+    border: none;
+    overflow: initial;
+}
+
+.toolbar-placeholder-overcanvas .editable-canvas-toolbar .toolbar-content-wrapper{
+    position: static;
+}
+
+.toolbar-placeholder-overcanvas .editable-canvas-toolbar .toolbar-content-wrapper li {
+    position: absolute;
+    border: 1px solid #E5E5E5;
+    width: 35px;
+}
+
+.toolbar-placeholder .toolbar-placeholder-overlay {
+    display: none;
+    position: absolute;
+    list-style-type: none;
+    background-color: #fff;
+    opacity: 0.8;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1200;
+}
+
+.toolbar-placeholder.placeholder-overlayed  .toolbar-placeholder-overlay {
+    display: block;
+}
+
+.toolbar-placeholder.placeholder-disabled,
+.toolbar-placeholder.placeholder-disabled *:not(.popup-overlay):not(.toolbar-placeholder-overlay){
+    cursor: default !important;
+    pointer-events: none !important;
+}
+
+.toolbar-label {
+    display: inline-block;
+    vertical-align: top;
+
+    width: auto;
+    height: 100%;
+    margin-right: 10px;
+    line-height: 35px;
+    /* padding-top: 9px; */
+}
+
+.toolbar-button.scroll-to-begin-btn,
+.toolbar-button.scroll-to-end-btn {
+    display: none;
+    position: absolute;
+    z-index: 1000;
+}
+
+
+/* show scroll buttons if .show-scroll class is on */
+.show-scroll .toolbar-button.scroll-to-begin-btn,
+.show-scroll .toolbar-button.scroll-to-end-btn {
+    display: block;
+}
+
+/* free space on left and right edge for scroll buttons, if .show-scroll class is on*/
+.toolbar-horizontal.toolbar-scrollable.show-scroll {
+    padding:  0 35px 0 35px;
+}
+
+/* for overCanvas mode, if .show-scroll class is on */
+.toolbar-placeholder-right.toolbar-placeholder-inside .toolbar-horizontal.toolbar-scrollable.show-scroll {
+    padding:  0 50px 0 35px;
+}
+
+/* free space on top and bottom edge for scroll buttons, if .show-scroll class is on */
+.toolbar-vertical.toolbar-scrollable.show-scroll {
+    padding:  35px 0 35px 0;
+}
+
+/* for overCanvas mode, if .show-scroll class is on */
+.toolbar-placeholder-bottom.toolbar-placeholder-inside .toolbar-vertical.toolbar-scrollable.show-scroll {
+    padding:  35px 0 50px 0;
+}
+
+/* horizontal toolbar scroll buttons positioning */
+.toolbar-horizontal.toolbar-scrollable .toolbar-button.scroll-to-begin-btn {
+    left : 0;
+    top: 0;
+}
+.toolbar-horizontal.toolbar-scrollable .toolbar-button.scroll-to-end-btn {
+    right : 0;
+    top: 0;
+}
+
+/* for overCanvas mode, if .show-scroll class is on */
+.toolbar-placeholder-bottom.toolbar-placeholder-inside .toolbar-horizontal.toolbar-scrollable .toolbar-button.scroll-to-end-btn {
+    right : 15px;
+    top: 0;
+}
+
+/* vertical toolbar scroll buttons positioning */
+.toolbar-vertical.toolbar-scrollable .toolbar-button.scroll-to-begin-btn {
+    left : 0;
+    top: 0;
+}
+.toolbar-vertical.toolbar-scrollable .toolbar-button.scroll-to-end-btn {
+    left : 0;
+    bottom: 0;
+}
+
+/* for overCanvas mode, if .show-scroll class is on */
+.toolbar-placeholder-right.toolbar-placeholder-inside .toolbar-vertical.toolbar-scrollable .toolbar-button.scroll-to-end-btn {
+    left : 0;
+    bottom: 15px;
+}
+
+/* scroll buttons icons for horizontal toolbar */
+.toolbar-horizontal.toolbar-scrollable .toolbar-button.scroll-to-begin-btn i:before {
+    content:"\f053";
+}
+.toolbar-horizontal.toolbar-scrollable .toolbar-button.scroll-to-end-btn i:before {
+    content:"\f054";
+}
+
+/* scroll buttons icons for vertical toolbar */
+.toolbar-vertical.toolbar-scrollable .toolbar-button.scroll-to-begin-btn i:before {
+    content:"\f077";
+}
+.toolbar-vertical.toolbar-scrollable .toolbar-button.scroll-to-end-btn i:before {
+    content:"\f078";
+}
+
+.toolbar-item-wrapper {
+    display: inline-block;
+    list-style: none;
+    text-align: left;
+    vertical-align: top;
+    position: relative;
+}
+
+.toolbar-item-label {
+    display: inline-block;
+    vertical-align: top;
+    width: auto;
+    height: 100%;
+    margin-right: 10px;
+    line-height: 35px;
+    /* padding-top: 9px; */
+}
+
+.toolbar-item-icon {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-position: center;
+    line-height: 32px;
+    text-align: center;
+    background-color: #fff;
+    cursor: pointer;
+
+    transition: background-color 400ms linear;
+}
+
+.toolbar-item-icon:before {
+    transition: color 400ms linear;
+}
+
+.toolbar-item-wrapper .toolbar-dropdown-block {
+    display: inline-block;
+    position: relative;
+}
+
+
+
+/*********************************/
+.toolbar-item-wrapper.toolbar-button-item {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #E5E5E5;
+    padding: 0;
+    margin: 0 5px;
+}
+
+.toolbar-item-wrapper.toolbar-button-item:before{
+    width: 32px;
+    height: 32px;
+    border: 1px solid #E5E5E5;
+    padding: 0;
+    margin: 0 5px;
+    color: #333;
+}
+
+
+.toolbar-item-wrapper.toolbar-button-item.prevent-highlight .toolbar-item-icon {
+    background-color: #fff !important;
+}
+.toolbar-item-wrapper.toolbar-button-item.prevent-highlight .toolbar-item-icon:before {
+    color: #333 !important;
+}
+
+.toolbar-item-wrapper.toolbar-button-item:not(.option-value-inherited):not(.option-value-invalid):not(.option-value-multiple) .toolbar-item-icon {
+    background-color: #1f78d8;
+}
+
+.toolbar-item-wrapper.toolbar-button-item:not(.option-value-inherited):not(.option-value-invalid):not(.option-value-multiple) .toolbar-item-icon:before {
+    color: #fff;
+}
+
+.toolbar-item-wrapper.toolbar-button-item.option-value-inherited:not(.option-value-multiple) .toolbar-item-icon {
+    background-color: #fff;
+}
+
+.toolbar-item-wrapper.toolbar-button-item.option-value-multiple .toolbar-item-icon {
+    background-color: #dcdcdc;
+}
+
+
+.toolbar-item-wrapper.toolbar-button-item .toolbar-dropdown-block {
+    position: absolute;
+    left: -1px;
+    top: 100%;
+}
+
+.toolbar-placeholder-bottom .toolbar-item-wrapper.toolbar-button-item .toolbar-dropdown-block {
+    position: absolute;
+    left: -1px;
+    bottom: 100%;
+    top: auto;
+}
+
+.toolbar-item-wrapper.toolbar-button-item.collapsed .toolbar-dropdown-block {
+    display: none;
+}
+
+.toolbar-item-wrapper.toolbar-button-item .toolbar-item-label {
+    display: none;
+}
+
+.toolbar-item-wrapper.toolbar-button-item .toolbar-item-icon {
+    display: block;
+}
+
+.btn-toggle-canvas.active a,
+.btn-toggle-canvas.dragging a {
+    outline: none;
+    background-color: #1f78d8;
+    color: #fff;
+}
+
+.editable-canvas-toolbar.tool-minimized-toolbar {
+    display: none;
+}
+
+.toolbar-item-description {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.toolbar-item-description input{
+    vertical-align: top;
+}
+
+.editable-canvas-toolbar input[type=range] {
+    /*removes default webkit styles*/
+    -webkit-appearance: none;
+
+    /*fix for FF unable to apply focus style bug */
+    border: 1px solid white;
+
+    /*required for proper track sizing in FF*/
+    width: 300px;
+
+    padding: 0;
+    height: 20px;
+    top: 7px;
+    overflow: hidden;
+}
+
+.editable-canvas-toolbar input[type=range]::-webkit-slider-runnable-track {
+    width: 300px;
+    height: 5px;
+    background: #ddd;
+    border: none;
+    border-radius: 3px;
+}
+.editable-canvas-toolbar  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    border: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #1f78d8;
+    margin-top: -5px;
+}
+.editable-canvas-toolbar  input[type=range]:focus {
+    outline: none;
+}
+.editable-canvas-toolbar  input[type=range]:focus::-webkit-slider-runnable-track {
+    background: #ccc;
+}
+
+.editable-canvas-toolbar input[type=range]::-moz-range-track {
+    width: 300px;
+    height: 5px;
+    background: #ddd;
+    border: none;
+    border-radius: 3px;
+}
+
+.editable-canvas-toolbar  input[type=range]::-moz-range-thumb {
+    border: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #1f78d8;
+}
+
+/*hide the outline behind the border*/
+.editable-canvas-toolbar input[type=range]:-moz-focusring{
+    outline: 1px solid white;
+    outline-offset: -1px;
+}
+
+.editable-canvas-toolbar  input[type=range]::-ms-track {
+    width: 300px;
+    height: 5px;
+
+    /*remove bg colour from the track, we'll use ms-fill-lower and ms-fill-upper instead */
+    background: transparent;
+
+    /*leave room for the larger thumb to overflow with a transparent border */
+    border-color: transparent;
+    border-width: 6px 0;
+
+    /*remove default tick marks*/
+    color: transparent;
+}
+
+.editable-canvas-toolbar input[type=range]::-ms-fill-lower {
+    background: #777;
+    border-radius: 10px;
+}
+
+.editable-canvas-toolbar input[type=range]::-ms-fill-upper {
+    background: #ddd;
+    border-radius: 10px;
+}
+
+.editable-canvas-toolbar input[type=range]::-ms-thumb {
+    border: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #1f78d8;
+}
+
+.editable-canvas-toolbar input[type=range]:focus::-ms-fill-lower {
+    background: #888;
+}
+
+.editable-canvas-toolbar input[type=range]:focus::-ms-fill-upper {
+    background: #ccc;
+}

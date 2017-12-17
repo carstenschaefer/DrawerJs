@@ -1,0 +1,180 @@
+.colorpicker-control .color-dropdown {
+    position: absolute;
+    padding: 5px;
+}
+
+li.colorpicker-control {
+    padding-left: 10px !important;
+    width: auto !important;
+}
+
+/*li.colorpicker-control span.toolbar-label {
+    display: inline-block;
+    width: auto;
+    margin-right: 10px;
+    float: left;
+    vertical-align: middle;
+    padding-top: 9px;
+}
+*/
+
+
+.colorpicker-control span.color-indicator {
+    display: inline-block;
+    width: 32px;
+    position: relative;
+    top: 0px;
+    height: 32px;
+    background-color: white;
+}
+
+.colorpicker-control .color-swatch {
+  box-sizing: border-box;
+  float : left;
+  width: 32px;
+  height: 32px;
+  padding : 0;
+  margin : 0;
+  border : 1px solid white;
+}
+
+.colorpicker-control .color-swatch.transparent {
+  width: 100%;
+  background-color: white;
+  text-align:  center;
+  margin : 0;
+}
+
+.control-hidden {
+  visibility: hidden !important;
+}
+
+.color-dropdown {
+    max-width: 365px;
+    max-height: 365px;
+    z-index: 1;
+
+    background: #fff;
+    border: 1px solid #ccc;
+
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+
+    -webkit-justify-content: flex-start;
+    -ms-flex-pack: start;
+    justify-content: flex-start;
+
+    -webkit-align-content: center;
+    -ms-flex-line-pack: center;
+    align-content: center;
+
+    -webkit-align-items: flex-start;
+    -ms-flex-align: start;
+    align-items: flex-start;
+
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+
+.color-dropdown.palette-with-scroll {
+    display: block;
+}
+
+.popup-content-wrapper .popup-content li.colorpicker-control {
+    min-width: 50%;
+}
+
+.popup-content-wrapper .popup-content li.colorpicker-control.editable-canvas-text-option {
+    min-width: 177px;
+    height: 40px;
+    line-height: 40px !important;
+}
+
+.popup-content-wrapper .popup-content li.colorpicker-control span.color-indicator {
+    right: 8px;
+    float: right;
+}
+
+.popup-content-wrapper .popup-content li.colorpicker-control.editable-canvas-text-option span.color-indicator {
+    right: 1px;
+    float: right;
+    top: 4px;
+}
+
+.popup-content-wrapper .popup-content .color-dropdown {
+    overflow: auto;
+    background: #fff;
+    border: 1px solid #ccc;
+}
+
+.popup-content-wrapper .popup-content .color-dropdown:not([data-position]){
+    width: 365px;
+
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+
+.toolbar-placeholder-bottom .color-dropdown,
+.popup-content-wrapper .popup-content[data-position=top] .color-dropdown {
+    left: 0px;
+    bottom: 100%;
+    max-width: 365px;
+
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    flex-direction: row;
+
+    -webkit-flex-wrap: wrap-reverse;
+    -ms-flex-wrap: wrap-reverse;
+    flex-wrap: wrap-reverse;
+}
+
+.toolbar-placeholder-top .color-dropdown,
+.popup-content-wrapper .popup-content[data-position=bottom] .color-dropdown {
+    left: 0px;
+    top: 100%;
+    max-width: 375px;
+
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    flex-direction: row;
+
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+
+.toolbar-placeholder-left .color-dropdown,
+.popup-content-wrapper .popup-content[data-position=right] .color-dropdown {
+    left: 100%;
+    top: 0;
+    max-height: 375px;
+
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
+
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+
+.toolbar-placeholder-right .color-dropdown,
+.popup-content-wrapper .popup-content[data-position=left] .color-dropdown {
+    right: 100%;
+    top: 0;
+    max-height: 375px;
+
+    padding-bottom: 14px;
+
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
+
+    -webkit-flex-wrap: wrap-reverse;
+    -ms-flex-wrap: wrap-reverse;
+    flex-wrap: wrap-reverse;
+}

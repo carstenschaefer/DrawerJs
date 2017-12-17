@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script src="../../lib/jquery-1.10.1.min.js"></script>
+    <script src="../../lib/jquery-migrate-1.2.1.min.js"></script>
+
+    <link rel="stylesheet" href="../../assets/bootstrap.min.css"/>
+    <link href="../../assets/font-awesome.min.css" rel="stylesheet">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+
+    <link rel="stylesheet" href="../../dist/drawerJs.css"/>
+    <script src="../../dist/drawerJs.standalone.js"></script>
+    <style type="text/css">
+        .api-block {
+            width: 60%;
+            padding: 30px;
+            border :  solid 2px #aaa;
+            margin-bottom: 50px;
+        }
+
+        .api-subsection {
+            margin-bottom: 10px;
+        }
+
+        .image-selector, .bg-image-selector {
+            display: inline-block;
+            width: 100px;
+            height: 100px;
+            background-size: cover;
+        }
+
+        .image-selector:hover, .bg-image-selector:hover{
+            outline:  2px solid black;
+        }
+
+        .image-selector.checked, .bg-image-selector.checked {
+            outline:  2px solid black;
+        }
+
+        .image-selector img, .bg-image-selector img {
+            display: none;
+            /* width:  100%; */
+            /* height: 100%; */
+        }
+
+        .url-select {
+            font-size: 20px;
+            line-height: 1.5;
+        }
+
+        .url-select option {
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        .plugin-list label {
+            display: inline-block;
+            width: 32%;
+            padding: 6px 7px;
+
+            font-size: 16px;
+            font-weight: normal;
+        }
+
+        .plugin-list p {
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <div class="panel panel-default">
+        <div class="panel-heading"><h3>DrawerJs API demo page</h3></div>
+         <div class="panel-body">
+
+             <div class="api-block">
+                 <div>
+                     <p>
+                         <label style="width:60%; font-weight:normal;">Start / stop editing:</label>
+                     </p>
+                     <div class="btn btn-success" onclick="onStartEditing()"> startEditing()</div>
+                     <div class="btn btn-danger" onclick="onStopEditing()"> stopEditing()</div>
+                 </div>
+             </div>
+
+             <div class="api-block">
+                 <div>
+                     <p>
+                         <label style="width:60%; font-weight:normal;">Save / load canvas:</label>
+                     </p>
+                     <div class="btn btn-success" onclick="onSave()"> save()</div>
+                     <div class="btn btn-success" onclick="onLoad()"> load()</div>
+                     <div class="btn btn-info" onclick="onSaveImage()"> saveImage()</div>
+                 </div>
+             </div>
+
+             <div id="background-image-api" class="api-block">
+                <ul class="bg-positions-list">
+                    <li>
+                        <label><input type="radio" name="bg-position" value='stretch' checked> stretch </label>
+                    </li>
+                    <li>
+                        <label><input type="radio" name="bg-position" value='center'> center </label>
+                    </li>
+                    <li>
+                        <label><input type="radio" name="bg-position" value='top-left'> top-left </label>
+                    </li>
+                    <li>
+                        <label><input type="radio" name="bg-position" value='top-left'> top-left </label>
+                    </li>
+                    <li>
+                        <label><input type="radio" name="bg-position" value='bottom-left'> bottom-left </label>
+                    </li>
+                    <li>
+                        <label><input type="radio" name="bg-position" value='bottom-right'> bottom-right </label>
+                    </li>
+                </ul>
+
+                 <div class="api-subsection">
+                     <p>
+                         <label class="code">drawer.api.setBackgroundImage(image)</label>
+                     </p>
+                    <div class="image-list">
+                         <div class="bg-image-selector" onclick="onBackgroundSelectorClick(this)" style="background-image: url('https://carstenschaefer.github.io/DrawerJs/examples/assets/bg.jpg')">
+                             <img src="https://carstenschaefer.github.io/DrawerJs/examples/assets/bg.jpg">
+                         </div>
+                         <div class="bg-image-selector" onclick="onBackgroundSelectorClick(this)" style="background-image: url('https://carstenschaefer.github.io/DrawerJs/examples/assets/bg2.jpg')">
+                             <img src="https://carstenschaefer.github.io/DrawerJs/examples/assets/bg2.jpg">
+                         </div>
+                         <div class="bg-image-selector" onclick="onBackgroundSelectorClick(this)" style="background-image: url('https://carstenschaefer.github.io/DrawerJs/examples/assets/bg3.jpg')">
+                             <img src="https://carstenschaefer.github.io/DrawerJs/examples/assets/bg3.jpg">
+                         </div>
+                    </div>
+
+                     <div class="btn btn-success" onclick="onBackgroundImageButtonClick(this)">SET</div>
+                 </div>
+
+                 <div class="api-subsection">
+                     <p>
+                        <label class="code">drawer.api.setBackgroundImageByUrl(url)</label>
+                        <select id="bg-url-select" class="form-control url-select">
+                            <option value="https://carstenschaefer.github.io/DrawerJs/examples/assets/bg.jpg">1 : https://carstenschaefer.github.io/DrawerJs/examples/assets/bg.jpg</option>
+                            <option value="https://carstenschaefer.github.io/DrawerJs/examples/assets/bg2.jpg">2 : https://carstenschaefer.github.io/DrawerJs/examples/assets/bg2.jpg</option>
+                            <option value="https://carstenschaefer.github.io/DrawerJs/examples/assets/bg3.jpg">3 : https://carstenschaefer.github.io/DrawerJs/examples/assets/bg3.jpg</option>
+                        </select>
+                    </p>
+
+                     <div class="btn btn-success" onclick="onBackgroundImageSelectButtonClick(this)">SET BY URL</div>
+                 </div>
+             </div>
+
+
+             <div id="image-api" class="api-block">
+                <div class="image-options">
+                    <div>
+                        <ul>
+                            <li>
+                                <label><input id="img-opt-fit-image"  type="checkbox" name="" checked> Fit image</label>
+                            </li>
+                            <li>
+                                <label><input id="img-opt-center-image"  type="checkbox" checked> Center image</label>
+                            </li>
+                            <li>
+                                <label>left:</label><input id="img-opt-left"   type="input" name="" value="100">
+                            </li>
+                            <li>
+                                <label>top:</label><input id="img-opt-top"    type="input" name="" value="100">
+                            </li>
+                            <li>
+                                <label>scaleX:</label><input id="img-opt-scalex" type="input" name="" value="1">
+                            </li>
+                            <li>
+                                <label>scaleY:</label><input id="img-opt-scaley" type="input" name="" value="1">
+                            </li>
+
+                        </ul>
+
+                    </div>
+                </div>
+
+                 <div class="api-subsection">
+                     <p>
+                         <label class="code">drawer.api.addImage(image)</label>
+                     </p>
+                    <div class="image-list">
+                         <div class="image-selector" onclick="onImageSelectorClick(this)" style="background-image: url('https://carstenschaefer.github.io/DrawerJs/examples/assets/bg.jpg')">
+                             <img src="https://carstenschaefer.github.io/DrawerJs/examples/assets/bg.jpg">
+                         </div>
+                         <div class="image-selector" onclick="onImageSelectorClick(this)" style="background-image: url('https://carstenschaefer.github.io/DrawerJs/examples/assets/bg2.jpg')">
+                             <img src="https://carstenschaefer.github.io/DrawerJs/examples/assets/bg2.jpg">
+                         </div>
+                         <div class="image-selector" onclick="onImageSelectorClick(this)" style="background-image: url('https://carstenschaefer.github.io/DrawerJs/examples/assets/bg3.jpg')">
+                             <img src="https://carstenschaefer.github.io/DrawerJs/examples/assets/bg3.jpg">
+                         </div>
+                    </div>
+
+                     <div class="btn btn-success" onclick="onImageButtonClick(this)">SET</div>
+                 </div>
+
+                 <div class="api-subsection">
+                     <p>
+                        <label class="code">drawer.api.addImageByUrl(url)</label>
+                        <select id="img-url-select" class="form-control url-select" >
+                            <option value="https://carstenschaefer.github.io/DrawerJs/examples/assets/bg.jpg">1 : https://carstenschaefer.github.io/DrawerJs/examples/assets/bg.jpg</option>
+                            <option value="https://carstenschaefer.github.io/DrawerJs/examples/assets/bg2.jpg">2 : https://carstenschaefer.github.io/DrawerJs/examples/assets/bg2.jpg</option>
+                            <option value="https://carstenschaefer.github.io/DrawerJs/examples/assets/bg3.jpg">3 : https://carstenschaefer.github.io/DrawerJs/examples/assets/bg3.jpg</option>
+                        </select>
+                    </p>
+
+                     <div class="btn btn-success" onclick="onImageSelectButtonClick(this)">SET BY URL</div>
+                 </div>
+             </div>
+
+             <div id="resize" class="api-block">
+                 <div>
+                        <div>
+                             <label style="width:20%;"> width: </label>
+                             <input id="resize-width" type="range" min="300" max="1000" value="500" onchange="onSliderUpdate(this)" oninput="onSliderUpdate(this)">
+                             <label class="slider-val" style="width:20%;">500</label>
+                        </div>
+
+                        <div>
+                             <label style="width:20%;"> height: </label>
+                                 <input id="resize-height" type="range" min="300" max="1000" value="500" onchange="onSliderUpdate(this)"  oninput="onSliderUpdate(this)">
+                             <label class="slider-val" style="width:20%;">500</label>
+                        </div>
+
+                        <div class="btn btn-danger" onclick="onSetSizeClick()"> setSize()</div>
+                 </div>
+             </div>
+
+             <div id="config-reload" class="api-block">
+                 <div>
+                        <div class="plugin-list">
+                                <p>
+
+                                    <label>
+                                        <input type="checkbox" name="Pencil" value="Pencil" checked>
+                                        Pencil
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" name="Eraser" value="Eraser" checked>
+                                        Eraser
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" name="Text" value="Text" checked>
+                                        Text
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" name="Line" value="Line" checked>
+                                        Line
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" name="ArrowOneSide" value="ArrowOneSide" checked>
+                                        ArrowOneSide
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" name="ArrowTwoSide" value="ArrowTwoSide" checked>
+                                        ArrowTwoSide
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" name="Triangle" value="Triangle" checked>
+                                        Triangle
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" name="Rectangle" value="Rectangle" checked>
+                                        Rectangle
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" name="Circle" value="Circle" checked>
+                                        Circle
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" name="Image" value="Image" checked>
+                                        Image
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" name="BackgroundImage" value="BackgroundImage" checked>
+                                        BackgroundImage
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" name="Polygon" value="Polygon" checked>
+                                        Polygon
+                                    </label>
+                                </p>
+                                <p>
+                                    <label>
+                                        <input type="checkbox" name="Color" value="Color" checked>
+                                        Color
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" name="ShapeBorder" value="ShapeBorder" checked>
+                                        ShapeBorder
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" name="BrushSize" value="BrushSize" checked>
+                                        BrushSize
+                                    </label>
+                                </p>
+                                <p>
+                                    <label>
+                                        <input type="checkbox" name="Resize" value="Resize" checked>
+                                        Resize
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" name="ShapeContextMenu" value="ShapeContextMenu" checked>
+                                        ShapeContextMenu
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" name="CloseButton" value="CloseButton" checked>
+                                        CloseButton
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" name="MovableFloatingMode" value="MovableFloatingMode" checked>
+                                        MovableFloatingMode
+                                    </label>
+                                </p>
+                        </div>
+
+                        <div>
+                        </div>
+
+                        <div class="btn btn-danger" onclick="onUpdateConfigClick()"> updateOptions()</div>
+                 </div>
+             </div>
+
+			<div id="selectedObject" class="api-block">
+				 <h4>
+					 <label style="width:60%; font-weight:normal;">Selected Object:</label>
+				 </h4>
+				 <div>
+				    <label style="width:40%;"> Get selected object: </label>
+					<div class="btn btn-success" onclick="onGetSelectedObject()"> getSelectedObject()</div>
+				 </div>
+				 <div>
+					<label style="width:40%;"> Delete or duplicate object: </label>
+					<div class="btn btn-success" onclick="onRemoveObject()"> removeObject()</div>
+					<div class="btn btn-success" onclick="onDuplicateObject()"> duplicateObject()</div>
+				 </div>
+				 <div>
+				    <label style="width:40%;"> Move object stepwise: </label>
+					<div class="btn btn-success" onclick="onBringObjectForward()"> bringObjectForward()</div>
+					<div class="btn btn-success" onclick="onSendObjectBackwards()"> sendObjectBackwards()</div>
+				 </div>
+				 <div>
+				    <label style="width:40%;"> Move object at end or at top: </label>
+					<div class="btn btn-success" onclick="onBringObjectToFront()"> bringObjectToFront()</div>
+					<div class="btn btn-success" onclick="onSendObjectToBack()"> sendObjectToBack()</div>
+				 </div>
+			</div>
+
+
+             <div id="context-menu" class="api-block">
+                 <div class="api-subsection">
+                    <div>
+                         <label style="width:20%;"> left: </label>
+                         <input id="context-menu-position-left" type="number" min="0" max="1000" value="500"
+                                onclick="event.preventDefault(); event.stopPropagation();">
+                    </div>
+                    <div>
+                         <label style="width:20%;"> top: </label>
+                         <input id="context-menu-position-top" type="number" min="0" max="1000" value="500"
+                                onclick="event.preventDefault(); event.stopPropagation();">
+                    </div>
+
+                    <label onclick="event.stopPropagation();"">
+                        <input id="context-menu-fit-viewport-check" type="checkbox" name="contextMenuFitIntoViewport">
+                        Fit menu inside viewport.
+                    </label>
+
+                    <div id="context-menu-set-position-btn" class="btn btn-info"> contextMenuSetPosition()</div>
+             </div>
+             <div class="api-subsection">
+                    <div>
+                        <label>
+                            <input id="context-menu-custom-renderer" type="checkbox" name="contextMenuCustomRenderer"">
+                            use custom render for context menu
+                        </label>
+                    </div>
+            </div>
+        </div>
+
+        <div id="minimize-restore-canvas" class="api-block">
+            <div>
+                <h4>
+                    <label style="width:60%; font-weight:normal;">Minimize/restore canvas:</label>
+                </h4>
+                <div class="btn btn-info" onclick="onMinimize()"> minimizeCanvas()</div>
+                <div class="btn btn-info" onclick="onRestore()"> restoreCanvas()</div>
+            </div>
+        </div>
+
+             <div class="api-block">
+                 <div>
+                     <p>
+                         <label>Zoom:</label><input id="zoom-value"   type="input" name="" value="1">
+                     </p>
+                     <p>
+                         <label>Zoom x center point:</label><input id="zoom-x-center"   type="input" name="" value="">
+                     </p>
+                     <p>
+                         <label>Zoom y center point:</label><input id="zoom-y-center"   type="input" name="" value="">
+                     </p>
+                     <p>
+                         <label style="width:60%; font-weight:normal;">Turn fullscreen mode on:</label>
+                     </p>
+                     <div class="btn btn-success" onclick="onSetZoom()"> setZoom()</div>
+                     <div class="btn btn-success" onclick="onRestoreDefaultZoom()"> restoreDefaultZoom()</div>
+                 </div>
+             </div>
+
+             <div class="api-block">
+                 <div>
+                     <p>
+                         <label style="width:60%; font-weight:normal;">Turn fullscreen mode on:</label>
+                     </p>
+                     <div class="btn btn-success" onclick="onFullscreenOn()"> onFullscreen()</div>
+                 </div>
+             </div>
+
+             <div class="api-block">
+                 <div class="api-subsection">
+                     <div>
+                         <label style="width:20%;"> left: </label>
+                         <input id="create-text-position-left" type="number" min="0" max="1000" value="100"
+                                onclick="event.preventDefault(); event.stopPropagation();">
+                     </div>
+                     <div>
+                         <label style="width:20%;"> top: </label>
+                         <input id="create-text-position-top" type="number" min="0" max="1000" value="100"
+                                onclick="event.preventDefault(); event.stopPropagation();">
+                     </div>
+                     <div>
+                         <label style="width:20%;"> Text: </label>
+                         <input id="create-text-value" type="text" value="Text"
+                                onclick="event.preventDefault(); event.stopPropagation();">
+                     </div>
+
+
+                     <div id="create-text-btn" class="btn btn-success" onclick="onCreateTextButtonClick()"> createText()</div>
+                 </div>
+             </div>
+
+             <div class="api-block">
+                 <div class="api-subsection">
+                     <div>
+                         <label style="width:20%;"> left: </label>
+                         <input id="active-color" type="color"
+                                onclick="event.preventDefault(); event.stopPropagation();">
+                     </div>
+
+                     <div id="active-color-btn" class="btn btn-success" onclick="onSetActiveColorClick()"> setActiveColor()</div>
+                 </div>
+             </div>
+
+            <div id="canvas-editor" style="position: relative;">
+                <p style="font-size: 20px; font-weight:600; padding-top: 300px; padding-left: 550px;">
+                    here goes some dummy content
+                </p>
+            </div>
+
+
+</div>
+<script>
+    var localization_ru =  {
+        'Add Drawer': 'Добавить холст для рисования',
+        'Insert Drawer': 'Добавить холст',
+        'Insert': 'Добавить',
+        'Free drawing mode': 'Карандаш',
+        'SimpleWhiteEraser': 'Ластик (белый)',
+        'Eraser': 'Ластик',
+        'Delete this canvas': 'Удалить полотно',
+        'Are you sure want to delete this canvas?': 'Вы уверены что хотите удалить полотно?',
+
+
+        // canvas properties popup
+        'Size (px)': 'Размер (px)',
+        'Position': 'Позиция',
+        'Inline': 'На линии',
+        'Left': 'Слева',
+        'Center': 'По центру',
+        'Right': 'Справа',
+        'Floating': 'Плавающий',
+        'Canvas properties': 'Свойства холста',
+        'Background': 'Фон',
+        'transparent': 'прозрачный',
+        'Cancel': 'Отмена',
+        'Save': 'Сохранить',
+
+        // Fullscreen plugin
+        'Enter fullscreen mode': 'Полноэкранный режим',
+        'Exit fullscreen mode': 'Выйти из полноэкранного режима',
+
+        // shape context menu plugin
+        'Bring forward': 'Переместить выше',
+        'Send backwards': 'Переместить ниже',
+        'Bring to front': 'Переместить наверх',
+        'Send to back': 'Переместить в низ',
+        'Duplicate': 'Клонировать',
+        'Remove': 'Удалить',
+
+        // brush size plugin
+        'Size:': 'Размер:',
+
+        // colorpicker plugin
+        'Fill:': 'Заливка:',
+        'Transparent': 'Прозрачный',
+        'None': 'Нет',
+
+        // shape border plugin
+        'Border:': 'Граница:',
+
+        // arrow plugin
+        'Draw an arrow': 'Стрелка',
+        'Draw a two-sided arrow': 'Двухсторонняя стрелка',
+        'Lines and arrows': 'Линии и стрелки',
+
+        // circle plugin
+        'Draw a circle': 'Круг',
+
+        // line plugin
+        'Draw a line': 'Линия',
+
+        // rectangle plugin
+        'Draw a rectangle': 'Прямоугольник',
+
+        // triangle plugin
+        'Draw a triangle': 'Треугольник',
+
+        // polygon plugin
+        'Draw a Polygon': 'Многоугольник',
+        'Stop drawing a polygon': 'Закончить рисование многоугольника (esc)',
+        'Click to start a new line': 'Кликните для начала новой линии',
+
+        // text plugin
+        'Draw a text': 'Текст',
+        'Click to place a text': 'Нажмите, чтобы расположить текст',
+        'Font:': 'Шрифт:',
+
+        // movable floating mode plugin
+        'Move canvas': 'Подвинуть холст',
+
+        // base shape
+        'Click to start drawing a ': 'Нажмите, чтобы начать рисовать ',
+
+        // image tool
+        'Insert an image'          : 'Вставить изображение',
+        'No file was selected!'    : 'Не был выбран файл!',
+        'Incorrect file type'      : 'Неверный тип файла!',
+        'File is to big!. Maximum file size is '   : 'Файл слишком большой! Максимальный размер файла - ',
+        'Image failed to create!'  : 'Не удалось создать изображение!',
+
+        // background image tool
+        'Insert a background image': 'Фоновое изображение'
+    };
+
+    $(document).ready(function () {
+        var drawerPlugins = [
+            // Drawing tools
+            'Pencil',
+            'Eraser',
+            'Text',
+            'Line',
+            'ArrowOneSide',
+            'ArrowTwoSide',
+            'Triangle',
+            'Rectangle',
+            'Circle',
+            'Image',
+            'BackgroundImage',
+            'Polygon',
+
+            // Drawing options
+            //'ColorHtml5',
+            'Color',
+            'ShapeBorder',
+            'BrushSize',
+            'OpacityOption',
+            'LineWidth',
+            'StrokeWidth',
+
+            'Resize',
+            'ShapeContextMenu',
+            'CloseButton',
+            'OvercanvasPopup',
+            'OpenPopupButton',
+            'MinimizeButton',
+            'ToggleVisibilityButton',
+            'MovableFloatingMode',
+            'FullscreenModeButton',
+            'Zoom',
+            'TextLineHeight',
+            'TextAlign',
+
+            'TextFontFamily',
+            'TextFontSize',
+            'TextFontWeight',
+            'TextFontStyle',
+            'TextDecoration',
+            'TextColor',
+            'TextBackgroundColor'
+        ];
+
+        // drawer is created as global property solely for debug purposes.
+        // doing  in production is considered as bad practice
+        window.drawer = new DrawerJs.Drawer(null, {
+            //texts: localization_ru,
+            exitOnOutsideClick: false,
+            plugins: drawerPlugins,
+			pluginsConfig: {
+				Image: {
+					scaleDownLargeImage: true,
+					maxImageSizeKb: 1024 //1MB
+				},
+				BackgroundImage: {
+				    scaleDownLargeImage: true,
+					maxImageSizeKb: 1024, //1MB
+					imagePosition: 'stretch',  // one of  'center', 'stretch', 'top-left', 'top-right', 'bottom-left', 'bottom-right'
+		        	acceptedMIMETypes: ['image/jpeg', 'image/png', 'image/gif'] ,
+                    dynamicRepositionImage: true,
+                    dynamicRepositionImageThrottle: 100
+				}
+			},
+			toolbars: {
+                drawingTools: {
+					position: 'top',
+					positionType: 'outside',
+					customAnchorSelector: '#custom-toolbar-here',
+					compactType: 'scrollable',
+					hidden: false,
+					toggleVisibilityButton: false,
+					fullscreenMode: {
+						position: 'top',
+						hidden: false,
+						toggleVisibilityButton: false
+					}
+				},
+				toolOptions: {
+					position: 'bottom',
+					positionType: 'outside',
+					compactType: 'scrollable',
+					hidden: false,
+					toggleVisibilityButton: false,
+					fullscreenMode: {
+						position: 'bottom',
+						compactType: 'popup',
+						hidden: false,
+						toggleVisibilityButton: false
+					}
+				},
+				settings : {
+					position : 'right',
+					positionType: 'outside',
+					compactType : 'scrollable',
+					hidden: false,
+					toggleVisibilityButton: false,
+					fullscreenMode: {
+					    position : 'right',
+						hidden: false,
+						toggleVisibilityButton: false
+					}
+				}
+			},
+            defaultImageUrl: '/examples/redactor/images/drawer.jpg',
+            defaultActivePlugin : { name : 'Pencil', mode : 'lastUsed'},
+            debug: true,
+			transparentBackground: true,
+			align: 'floating'  //one of 'left', 'right', 'center', 'inline', 'floating'
+        }, 600, 600);
+
+        $('#canvas-editor').append(window.drawer.getHtml());
+        window.drawer.onInsert();
+
+        setClickHandlers();
+    });
+
+
+    function onStartEditing() {
+        window.drawer.api.startEditing();
+    }
+    function onStopEditing() {
+        window.drawer.api.stopEditing();
+    }
+    function onMinimize() {
+      drawer.api.minimizeCanvas()
+    }
+    function onRestore() {
+      drawer.api.restoreCanvas()
+    }
+    function onFullscreenOn() {
+      drawer.api.fullscreenOn()
+    }
+    function onSetZoom() {
+      var zoomValueRaw = parseFloat($('#zoom-value').val()),
+          zoomValue = isFinite(zoomValueRaw) ? zoomValueRaw : 1,
+          zoomCenterX = parseInt($('#zoom-x-center').val(), 10),
+          zoomCenterY = parseInt($('#zoom-y-center').val(), 10);
+      drawer.api.setZoom(zoomValue, zoomCenterX, zoomCenterY);
+    }
+    function onRestoreDefaultZoom() {
+      drawer.api.restoreDefaultZoom();
+    }
+    function onFullscreenOff() {
+      drawer.api.fullscreenOff()
+    }
+    function onLoad() {
+        window.drawer.api.loadCanvasFromData(sessionStorage.drawerJsData);
+    }
+    function onSave() {
+        var serializedData = window.drawer.api.getCanvasAsJSON();
+        sessionStorage.drawerJsData = serializedData;
+    }
+    function onSaveImage() {
+        window.drawer.api.saveCanvas();
+    }
+    function onBackgroundSelectorClick(el) {
+        $('.bg-image-selector').removeClass('checked');
+        $(el).addClass('checked');
+    }
+    function onBackgroundImageButtonClick (btn) {
+        console.log('onBackgroundImageClick()');
+        var imgEl = $('.bg-image-selector.checked img')[0];
+
+        var position = $('.bg-positions-list :checked')[0].value;
+        console.log('pos = ', position);
+
+        drawer.api.setBackgroundImage(imgEl, {'imagePosition' : position});
+    }
+
+    function onBackgroundImageSelectButtonClick (btn) {
+        var imgSrc = $('#bg-url-select :checked').val();
+        console.log('onBackgroundImageClick(): imgSrc=', imgSrc);
+
+        var position = $('.bg-positions-list :checked')[0].value;
+        console.log('pos = ', position);
+
+        drawer.api.setBackgroundImageFromUrl(imgSrc, {'imagePosition' : position});
+    }
+
+    function onSetActiveColorClick(btn) {
+      var color = $('#active-color').val();
+      drawer.api.setActiveColor(color);
+    }
+
+    function onCreateTextButtonClick(btn) {
+      var left = $('#create-text-position-left').val(),
+          top = $('#create-text-position-top').val(),
+          text = $('#create-text-value').val();
+      drawer.api.createText(left, top, text);
+    }
+
+/***********************************************************************************************
+ * IMAGE API
+ ************************************************************************************************/
+
+    function onImageSelectorClick(el) {
+        $('.image-selector').removeClass('checked');
+        $(el).addClass('checked');
+}
+    function onImageButtonClick (btn) {
+        console.log('onImageButtonClick()');
+        var imgEl = $('.image-selector.checked img')[0];
+
+        var options = {};
+        options.scaleDownLargeImage = $('#img-opt-fit-image').attr('checked');
+        options.centerImage = $('#img-opt-center-image').attr('checked');
+
+        if (!options.scaleDownLargeImage) {
+            options.left = Number.parseInt($('#img-opt-left').val());
+            options.top = Number.parseInt($('#img-opt-top').val());
+            options.scaleX = Number.parseFloat($('#img-opt-scalex').val());
+            options.scaleY = Number.parseFloat($('#img-opt-scaley').val());
+        }
+      console.log('onImageButtonClick() options:', options);
+
+        drawer.api.addImage(imgEl, options);
+    }
+
+
+    function onImageSelectButtonClick (btn) {
+        var imgSrc = $('#img-url-select :checked').val();
+        console.log('onBackgroundImageClick(): imgSrc=', imgSrc);
+
+        var options = {};
+        var position = $('.bg-positions-list :checked')[0].value;
+        console.log('pos = ', position);
+
+        drawer.api.addImageFromUrl(imgSrc, options);
+    }
+
+/***********************************************************************************************
+ * SIZE API
+ ************************************************************************************************/
+    function onSliderUpdate(slider) {
+        var val = $(slider).val();
+        $(slider).parent().find('.slider-val').html(val);
+        return true;
+    }
+
+    function onSetSizeClick(btn) {
+        var width = $('#resize-width').val();
+        var height = $('#resize-height').val();
+
+        drawer.api.setSize(width, height);
+    }
+
+/***********************************************************************************************
+ * CONFIG RELOAD API
+ ************************************************************************************************/
+    function onUpdateConfigClick() {
+        var plugins = [];
+        $('.plugin-list :checked').each(function(i, $el) {
+            plugins.push($el.value);
+        });
+
+        console.log('plugins:', plugins);
+        var options = {plugins: plugins};
+
+        drawer.api.updateOptions(options);
+    }
+
+
+/***********************************************************************************************
+* SELECTED OBJECT API
+************************************************************************************************/
+	var selectedObject;
+
+	function onGetSelectedObject() {
+        selectedObject = window.drawer.api.getSelectedObject();
+    }
+    function onRemoveObject() {
+        window.drawer.api.removeObject(selectedObject);
+    }
+    function onDuplicateObject() {
+        window.drawer.api.duplicateObject(selectedObject);
+    }
+    function onBringObjectForward() {
+        window.drawer.api.bringObjectForward(selectedObject);
+    }
+    function onSendObjectBackwards() {
+        window.drawer.api.sendObjectBackwards(selectedObject);
+    }
+    function onBringObjectToFront() {
+        window.drawer.api.bringObjectToFront(selectedObject);
+    }
+    function onSendObjectToBack() {
+        window.drawer.api.sendObjectToBack(selectedObject);
+    }
+    /***********************************************************************************************
+ * CONTEXT MENU  API
+ ************************************************************************************************/
+
+    function onContextMenuSetPositionClick(evt) {
+        var left, top, fitInViewPort;
+        left = $('#context-menu-position-left').val();
+        top  = $('#context-menu-position-top').val();
+        fitInViewPort = $('#context-menu-fit-viewport-check').attr('checked');
+
+        console.log('onContextMenuSetPositionClick: ',left, top, fitInViewPort);
+        drawer.api.contextMenuSetPosition(left, top, fitInViewPort);
+
+        evt.preventDefault();
+        return false;
+    }
+
+
+    function onContextMenuUseCustomRenderer(evt) {
+        if ($(this).attr('checked')) {
+            var optionsUpdate = {
+                pluginsConfig : {
+                    ShapeContextMenu : {
+                        customMenuRenderer : contextMenuCustomRenderer
+                    }
+                }
+            };
+
+        } else {
+            var optionsUpdate = {
+                pluginsConfig : {
+                    ShapeContextMenu : {
+                        customMenuRenderer : null
+                    }
+                }
+            };
+
+            drawer.api.updateOptions(optionsUpdate);
+        }
+
+        drawer.api.unloadPlugin('ShapeContextMenu');
+        drawer.api.updateOptions(optionsUpdate);
+        drawer.api.loadPlugin('ShapeContextMenu');
+
+        // hack to set plugin handlers, or they will load only on toolbar creation;
+        var plugin = drawer.getPluginInstance('ShapeContextMenu');
+        plugin._setHandlers();
+    }
+
+
+    function contextMenuCustomRenderer(evt) {
+        console.log(evt);
+        console.log('---CUSTOM RENDER HERE---');
+        alert('---CUSTOM RENDER HERE---');
+    }
+
+    function setClickHandlers() {
+        $('#context-menu-set-position-btn').click(onContextMenuSetPositionClick);
+        $('#context-menu-custom-renderer').click(onContextMenuUseCustomRenderer);
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+<!-- Begin Jekyll SEO tag v2.3.0 -->
+<title>DrawerJS architecture overview | DrawerJs</title>
+<meta property="og:title" content="DrawerJS architecture overview" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A customizable WYSIWYG HTML canvas editor." />
+<meta property="og:description" content="A customizable WYSIWYG HTML canvas editor." />
+<link rel="canonical" href="http://localhost:4000/ARCHITECTURE.html" />
+<meta property="og:url" content="http://localhost:4000/ARCHITECTURE.html" />
+<meta property="og:site_name" content="DrawerJs" />
+<script type="application/ld+json">
+{"name":null,"description":"A customizable WYSIWYG HTML canvas editor.","author":null,"@type":"WebPage","url":"http://localhost:4000/ARCHITECTURE.html","publisher":null,"image":null,"headline":"DrawerJS architecture overview","dateModified":null,"datePublished":null,"sameAs":null,"mainEntityOfPage":null,"@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=ccd7b9808535c5bde7eeb6b685f0886d902663ba">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>DrawerJs</h1>
+        <p>A customizable WYSIWYG HTML canvas editor.</p>
+
+        
+          <p class="view"><a href="http://github.com/carstenschaefer/DrawerJs">View the Project on GitHub <small></small></a></p>
+        
+
+        
+
+        
+      </header>
+      <section>
+
+      <h1 id="drawerjs-architecture-overview">DrawerJS architecture overview</h1>
+
+<h2 id="srcdrawerjs"><code class="highlighter-rouge">src/Drawer.js</code></h2>
+
+<p>Main file which contains DrawerJS constructor function.</p>
+
+<p>This file contains all core functionality of Drawer: 
+code for instantiating a new instance of Drawer and setting up events and plugins, options management code, state management code.</p>
+
+<p>Most important topics:</p>
+
+<h2 id="drawerjs-states">DrawerJS states</h2>
+
+<p>DrawerJS instance always has one of two states: <strong>preview mode</strong> or <strong>edit mode</strong>.</p>
+
+<h3 id="preview-mode">Preview mode</h3>
+
+<p>In normal mode DrawerJS is a simple <code class="highlighter-rouge">&lt;img&gt;</code> tag in the DOM. It shows an image that was drawn by encoding canvas data to <code class="highlighter-rouge">base64</code> string and setting it as a <code class="highlighter-rouge">src</code> attribute on underlying <code class="highlighter-rouge">&lt;img&gt;</code>.</p>
+
+<p>That image has a click handler attached to it. When it is triggered DrawerJS goes into <strong>edit mode</strong>.</p>
+
+<h3 id="edit-mode">Edit mode</h3>
+
+<p>When in edit mode, DrawerJS becomes a <code class="highlighter-rouge">&lt;canvas&gt;</code> element. Underlying <code class="highlighter-rouge">&lt;img&gt;</code> becomes hidden and user sees actual drawings on canvas. Drawing is performed using <code class="highlighter-rouge">fabric.js</code> library.</p>
+
+<p>A set of toolbar is also displayed around the canvas. Toolbars contain tools and options for user to draw.</p>
+
+<p>When DrawerJS goes into <strong>edit mode</strong>, it attaches a click handler to <code class="highlighter-rouge">document.body</code>. When click occurs outside of DrawerJS it means that is loosed focus and <strong>preview mode</strong> is activated.</p>
+
+<h3 id="state-management-functions">State management functions</h3>
+
+<p>There are two functions that manage state: [<code class="highlighter-rouge">_startEditing</code>] and [<code class="highlighter-rouge">_stopEditing</code>]</p>
+
+<p>Here we will cover only [<code class="highlighter-rouge">_startEditing</code>] because [<code class="highlighter-rouge">_stopEditing</code>] does all the same but in reverse order.</p>
+
+<p>[<code class="highlighter-rouge">_startEditing</code>] function is called from DrawerJS code when user clicks on the image (drawerjs instance).</p>
+
+<p>The purpose of the function is:</p>
+
+<ul>
+  <li>
+    <p>Create <code class="highlighter-rouge">&lt;canvas&gt;</code> element, append it to DOM and position it correctly above the preview image.</p>
+  </li>
+  <li>
+    <p>Construct new <code class="highlighter-rouge">fabric.js</code> canvas wrapper around raw html5 <code class="highlighter-rouge">&lt;canvas&gt;</code> element.</p>
+  </li>
+  <li>
+    <p>Pass the data about objects on canvas to <code class="highlighter-rouge">fabric.js</code> wrapper object. [Drawer.prototype.loadCanvas] function which is located at <code class="highlighter-rouge">Drawer.Storage.js</code> used for that purpose.</p>
+
+    <p>[Drawer.prototype.loadCanvas] deserializes canvas data (objects/sizes/colors/dimensions) using <code class="highlighter-rouge">fabric.js</code> <code class="highlighter-rouge">loadFromJSON</code> method, fixes objects properties, triggers <code class="highlighter-rouge">EVENT_LOADED_FROM_JSON</code> event and calls [Drawer.prototype.onCanvasLoaded] function.</p>
+
+    <p>When all post-load job is done, <code class="highlighter-rouge">EVENT_CANVAS_READY</code> gets triggered on DrawerJS object. This is the moment where all registered plugins get notified about canvas readyness and prepare themselves for edit mode.</p>
+  </li>
+</ul>
+
+<h3 id="canvas-data">Canvas data</h3>
+
+<p>To persist canvas data between switching states DrawerJS serializes all <code class="highlighter-rouge">fabric.js</code> objects from canvas to JSON and stores it in <code class="highlighter-rouge">&lt;img&gt;</code> attribute <code class="highlighter-rouge">data-canvas-serialized</code>.</p>
+
+<p>This allows saving image as-is on the backend or on any other storage and then restore DrawerJS from that image.</p>
+
+<p>For example: when image is loaded from some storage and DrawerJS is attached to it, it looks at <code class="highlighter-rouge">data-canvas-serialized</code> attribute. 
+When user clicks on image, DrawerJS goes into edit mode and restores all canvas objects and user is able to manipulate them.</p>
+
+<h2 id="plugin-system">Plugin system</h2>
+
+<p>All drawing tools as well as most of other features (toolbars, shape options) are not tied to DrawerJS and are separate modules.</p>
+
+<p>Drawer uses [Drawer.prototype.loadPlugins] function to load plugins and store their instances in <code class="highlighter-rouge">_pluginsInstances</code> private variable.</p>
+
+<p>When plugin is instantiated DrawerJS passes a hashmap of options to it from own <code class="highlighter-rouge">options.pluginsConfig[pluginName]</code> property.</p>
+
+<p>DrawerJS uses [Events] system to communicate with plugins.</p>
+
+<p>All plugins receive DrawerJS instance in their constructor and should subscribe to any required events with `Drawer.on(EVENT_NAME) method.</p>
+
+<p>When event occurs (for example, <code class="highlighter-rouge">EVENT_EDIT_START</code>) DrawerJS will trigger all event listeners in all plugins subscribed to a particular event. It’s a plugin’s responsibility to react to an event, for example, to show some UI or change state.</p>
+
+<p>Documentation for all plugins can be found in a plugin director (see <a href="/ARCHITECTURE-DIRECTORIES.html">Directories</a>).</p>
+
+<p>Here are quick links for most complex plugins:</p>
+
+<ul>
+  <li><a href="/src/plugins/brush-eraser/">Eraser</a></li>
+</ul>
+
+
+      </section>
+      <footer>
+        
+        <p>This project is maintained by <a href="http://github.com/carstenschaefer">carstenschaefer</a></p>
+        
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="/assets/js/scale.fix.js"></script>
+
+
+  
+  </body>
+</html>

@@ -1,0 +1,43 @@
+.minimized {
+    border: none !important;
+    height: auto !important;
+    width: auto !important;
+}
+
+.minimized .toolbar-placeholder.toolbar-placeholder-top.toolbar-placeholder-inside,
+.minimized .toolbars-wrapper {
+    position: static;
+}
+
+/* Elements to hide */
+.minimized .canvas-container,
+.minimized .editable-canvas-toolbar:not(.tool-minimized-toolbar),
+.minimized .toolbar-button.btn-fullscreen-canvas,
+.minimized span.redactor-drawer-resizer{
+    display: none;
+}
+
+/* Hide toolbar while normal mode */
+.editable-canvas-toolbar.tool-minimized-toolbar {
+    display: none;
+}
+
+.minimized .editable-canvas-toolbar.tool-minimized-toolbar {
+    display: inline-block;
+}
+
+.minimized .editable-canvas-toolbar.tool-minimized-toolbar .toolbar-content-wrapper {
+    white-space: nowrap;
+    display: inline-block;
+}
+
+/* Caption of canvas */
+.canvas-caption {
+    list-style-type: none;
+    line-height: 32px;
+    margin: 0 5px;
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+    background: white;
+}
