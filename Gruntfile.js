@@ -143,6 +143,17 @@ module.exports = function (grunt) {
         }
       }
     },
+    cssmin: {
+      options: {
+        sourceMapIncludeSources: true,
+        banner: banner
+      },
+      target: {
+        files: {
+          'dist/drawerJs.min.css': ['dist/drawerJs.css']
+        }
+      }
+    },
     jsdoc: {
       dist: {
         src: standaloneSources,
@@ -169,6 +180,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-cssmin');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-http-server');
   grunt.loadNpmTasks('grunt-open');
@@ -179,6 +191,8 @@ module.exports = function (grunt) {
     'copy',
     'jshint',
     'concat',
+    'uglify',
+    'cssmin',
   	'open',
     'jsdoc'
   ]);
