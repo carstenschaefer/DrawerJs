@@ -201,6 +201,8 @@ module.exports = function (grunt) {
     'copy',
     'jshint',
     'concat',
+    'uglify',
+    'cssmin',
     'jsdoc'
   ]);
 
