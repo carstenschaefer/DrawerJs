@@ -62,7 +62,7 @@
     this._setupOptions(options);
 
     if (_this.options.cursorUrl == 'pencil') {
-      var drawerFolderUrl = util.getDrawerFolderUrl();
+      var drawerFolderUrl = window.location.href;
       if(drawerFolderUrl){
         _this.options.cursorUrl = 'url(' + drawerFolderUrl +
         'assets/cursor-fa-pencil.cur), default';
