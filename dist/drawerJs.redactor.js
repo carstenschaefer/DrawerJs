@@ -37339,7 +37339,7 @@ ToolOptionsToolbar.prototype.customScrollMode = true;
 
         if (this.options.fixedBackgroundUrl) {
             this.drawerInstance.on(this.drawerInstance.EVENT_CANVAS_READY, function() {
-                _this.loadImageFromUrl(_this.options.fixedBackgroundUrl, {}, true);
+                _this.loadImageFromUrl(_this.options.fixedBackgroundUrl, options, true);
             });
         }
     };

@@ -62,7 +62,7 @@ module.exports = function (grunt) {
     open : {
       dev : {
         path: 'http://localhost:8081/examples',
-        app: 'chromium-browser'
+        app: 'Chrome'
       }
     },
  	copy: {
