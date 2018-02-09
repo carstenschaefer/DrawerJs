@@ -34,6 +34,7 @@
         this._checkObject(fabricItem);
 
         this.drawer.fCanvas.bringForward(fabricItem, true);
+        this.drawer.syncCanvasData();
         return fabricItem;
     };
 
@@ -47,6 +48,7 @@
     DrawerApi.prototype.sendObjectBackwards = function(fabricItem) {
         this._checkObject(fabricItem);
         this.drawer.fCanvas.sendBackwards(fabricItem, true);
+        this.drawer.syncCanvasData();
         return fabricItem;
     };
 
@@ -61,6 +63,7 @@
         this._checkObject(fabricItem);
 
         this.drawer.fCanvas.bringToFront(fabricItem, true);
+        this.drawer.syncCanvasData();
         return fabricItem;
     };
 
@@ -75,6 +78,7 @@
         this._checkObject(fabricItem);
 
         this.drawer.fCanvas.sendToBack(fabricItem);
+        this.drawer.syncCanvasData();
         return fabricItem;
     };
 
