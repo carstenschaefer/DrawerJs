@@ -143,7 +143,7 @@
 
     toolbar.addControl(this.$opacityControl, this.options.buttonOrder);
 
-    $(this.$opacityControl).on('input', this.onOpacityChange.bind(this));
+    $(this.$opacityControl).on('change', this.onOpacityChange.bind(this));
 
     return this.$opacityControl;
   };
