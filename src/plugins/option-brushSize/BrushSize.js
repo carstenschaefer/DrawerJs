@@ -91,7 +91,7 @@
 
     toolbar.addControl(_this.$sizeControl, this.options.buttonOrder);
 
-    $(_this.$sizeControl).on('input', function () {
+    $(_this.$sizeControl).on('change', function () {
       var size = $(_this.$sizeControl).find('input').val();
       $(_this.$sizeControl).find('.editable-canvas-brushsize-indicator')
         .text(size + 'px');

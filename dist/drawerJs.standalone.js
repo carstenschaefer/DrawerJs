@@ -37179,7 +37179,7 @@ ToolOptionsToolbar.prototype.customScrollMode = true;
 
         if (this.options.fixedBackgroundUrl) {
             this.drawerInstance.on(this.drawerInstance.EVENT_CANVAS_READY, function() {
-                _this.loadImageFromUrl(_this.options.fixedBackgroundUrl, {}, true);
+                _this.loadImageFromUrl(_this.options.fixedBackgroundUrl, options, true);
             });
         }
     };
@@ -37606,7 +37606,7 @@ ToolOptionsToolbar.prototype.customScrollMode = true;
     this._setupOptions(options);
 
     if (_this.options.cursorUrl == 'eraser') {
-      var drawerFolderUrl = util.getDrawerFolderUrl();
+      var drawerFolderUrl = window.location.href;
       if(drawerFolderUrl){
         _this.options.cursorUrl = 'url(' + drawerFolderUrl +
         'assets/cursor-fa-eraser.cur), default';
@@ -38294,7 +38294,7 @@ ToolOptionsToolbar.prototype.customScrollMode = true;
     this._setupOptions(options);
 
     if (_this.options.cursorUrl == 'pencil') {
-      var drawerFolderUrl = util.getDrawerFolderUrl();
+      var drawerFolderUrl = window.location.href;
       if(drawerFolderUrl){
         _this.options.cursorUrl = 'url(' + drawerFolderUrl +
         'assets/cursor-fa-pencil.cur), default';

@@ -63,7 +63,7 @@
 
     this.$opacityIndicator = this.$opacityControl.find('.editable-canvas-opacity-option-indicator');
     toolbar.addControl(this.$opacityControl, this.options.buttonOrder);
-    this.$opacityControl.on('input', this._onOpacityChange.bind(this));
+    this.$opacityControl.on('change', this._onOpacityChange.bind(this));
     return this.$opacityControl;
   };
 
