@@ -27224,7 +27224,7 @@ DrawerJs.texts = {
     }
 
     var canvasWidth = originalCanvas.width,
-        canvasHeight = originalCanvas.width,
+        canvasHeight = originalCanvas.height,
         resultCanvasWidth = canvasWidth || utilNamespace.__latestValidCanvasWidth || 1,
         resultCanvasHeight = canvasHeight || utilNamespace.__latestValidCanvasHeight || 1;
 
