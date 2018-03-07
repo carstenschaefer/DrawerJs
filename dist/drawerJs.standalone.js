@@ -27672,6 +27672,7 @@ DrawerJs.texts = {
         this._checkObject(fabricItem);
 
         this.drawer.fCanvas.bringForward(fabricItem, true);
+        this.drawer.syncCanvasData();
         return fabricItem;
     };
 
@@ -27685,6 +27686,7 @@ DrawerJs.texts = {
     DrawerApi.prototype.sendObjectBackwards = function(fabricItem) {
         this._checkObject(fabricItem);
         this.drawer.fCanvas.sendBackwards(fabricItem, true);
+        this.drawer.syncCanvasData();
         return fabricItem;
     };
 
@@ -27699,6 +27701,7 @@ DrawerJs.texts = {
         this._checkObject(fabricItem);
 
         this.drawer.fCanvas.bringToFront(fabricItem, true);
+        this.drawer.syncCanvasData();
         return fabricItem;
     };
 
@@ -27713,6 +27716,7 @@ DrawerJs.texts = {
         this._checkObject(fabricItem);
 
         this.drawer.fCanvas.sendToBack(fabricItem);
+        this.drawer.syncCanvasData();
         return fabricItem;
     };
 
@@ -43965,7 +43969,7 @@ CloseButton.prototype._onCloseButtonClick = function() {
 
     toolbar.addControl(_this.$sizeControl, this.options.buttonOrder);
 
-    $(_this.$sizeControl).on('input', function () {
+    $(_this.$sizeControl).on('change', function () {
       var size = $(_this.$sizeControl).find('input').val();
       $(_this.$sizeControl).find('.editable-canvas-brushsize-indicator')
         .text(size + 'px');
@@ -45036,7 +45040,7 @@ CloseButton.prototype._onCloseButtonClick = function() {
 
     toolbar.addControl(this.$opacityControl, this.options.buttonOrder);
 
-    $(this.$opacityControl).on('input', this.onOpacityChange.bind(this));
+    $(this.$opacityControl).on('change', this.onOpacityChange.bind(this));
 
     return this.$opacityControl;
   };
@@ -45437,7 +45441,7 @@ CloseButton.prototype._onCloseButtonClick = function() {
 
     this.$opacityIndicator = this.$opacityControl.find('.editable-canvas-opacity-option-indicator');
     toolbar.addControl(this.$opacityControl, this.options.buttonOrder);
-    this.$opacityControl.on('input', this._onOpacityChange.bind(this));
+    this.$opacityControl.on('change', this._onOpacityChange.bind(this));
     return this.$opacityControl;
   };
 
@@ -45509,6 +45513,7 @@ CloseButton.prototype._onCloseButtonClick = function() {
   pluginsNamespace.OpacityOption = OpacityOption;
 
 }(jQuery, DrawerJs.plugins, DrawerJs.plugins.BaseToolOptions, DrawerJs.util));
+
 (function ($, pluginsNamespace, BaseToolOptions, util) {
   'use strict';
 
