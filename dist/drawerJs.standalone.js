@@ -44071,10 +44071,14 @@ CloseButton.prototype._onCloseButtonClick = function() {
    * @param {String} selectedColor Hash value of user selected color.
    */
   ColorTool.prototype._onColorSelected = function (selectedColor) {
-    var opacity = this.opacityControl.getOpacity();
-    var colorWithAlfaRgba = this._hexToRgba(selectedColor, opacity);
-
-    this.drawer.setColor(colorWithAlfaRgba);
+    if (selectedColor == 'transparent') {
+      var opacity = this.opacityControl.getOpacity();
+      var colorWithAlfaRgba = this._hexToRgba(selectedColor, opacity);
+  
+      this.drawer.setColor(colorWithAlfaRgba); 
+    } else {
+      this.drawer.setColor(selectedColor);
+    }
   };
 
 
