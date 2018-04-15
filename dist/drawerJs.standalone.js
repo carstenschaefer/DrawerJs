@@ -1,4 +1,4 @@
-/*! drawerJs - 1.11.0
+/*! drawerjs - 1.11.0
  */
 
 /*! Fabric.js Copyright 2008-2015, Printio (Juriy Zaytsev, Maxim Chernyak) */
