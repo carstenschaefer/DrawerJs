@@ -46,7 +46,7 @@
   Line.prototype = Object.create(BaseShape.prototype);
   Line.prototype.constructor = Line;
 
-  Line.prototype.checkOnlyWidth = true;
+  Line.prototype.checkOnlyWidthOrHeight = true;
 
   Line.prototype._defaultOptions = {
     lineAngleTooltip: {

@@ -36007,7 +36007,7 @@ ToolOptionsToolbar.prototype.customScrollMode = true;
         var minSize = _this.drawer.touchDevice ? _this.minShapeSizeForTouch : _this.minShapeSize,
             widthIsSmaller = _this.shape.width < minSize,
             heightIsSmaller = !_this.checkOnlyWidth && (_this.shape.height < minSize),
-            shapeIsSmaller = widthIsSmaller || heightIsSmaller,
+            shapeIsSmaller = _this.checkOnlyWidthOrHeight ? widthIsSmaller && heightIsSmaller : widthIsSmaller || heightIsSmaller,
             preventAddOfShape = shapeIsSmaller;
 
         // Check, if shape is too small.
@@ -47931,7 +47931,7 @@ CloseButton.prototype._onCloseButtonClick = function() {
   Line.prototype = Object.create(BaseShape.prototype);
   Line.prototype.constructor = Line;
 
-  Line.prototype.checkOnlyWidth = true;
+  Line.prototype.checkOnlyWidthOrHeight = true;
 
   Line.prototype._defaultOptions = {
     lineAngleTooltip: {
