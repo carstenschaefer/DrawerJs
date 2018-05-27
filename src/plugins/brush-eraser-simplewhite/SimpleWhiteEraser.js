@@ -49,7 +49,7 @@
     this._setupOptions(options);
 
     if (_this.options.cursorUrl == 'eraser') {
-      var drawerFolderUrl = window.location.href;
+      var drawerFolderUrl = util.getDrawerFolderUrl();
       if(drawerFolderUrl){
         _this.options.cursorUrl = 'url(' + drawerFolderUrl +
         'assets/cursor-fa-eraser.cur), default';

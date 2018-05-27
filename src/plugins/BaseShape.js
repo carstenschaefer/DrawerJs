@@ -186,7 +186,7 @@
         var minSize = _this.drawer.touchDevice ? _this.minShapeSizeForTouch : _this.minShapeSize,
             widthIsSmaller = _this.shape.width < minSize,
             heightIsSmaller = !_this.checkOnlyWidth && (_this.shape.height < minSize),
-            shapeIsSmaller = widthIsSmaller || heightIsSmaller,
+            shapeIsSmaller = _this.checkOnlyWidthOrHeight ? widthIsSmaller && heightIsSmaller : widthIsSmaller || heightIsSmaller,
             preventAddOfShape = shapeIsSmaller;
 
         // Check, if shape is too small.
