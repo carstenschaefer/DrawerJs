@@ -249,7 +249,9 @@
           };
         }
 
-        image.crossOrigin = "Anonymous"
+        if (options.crossOrigin) {
+          image.crossOrigin = options.crossOrigin
+        }
         // this will start creating image
         image.src = imageSrc;
     };
