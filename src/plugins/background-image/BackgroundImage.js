@@ -249,6 +249,7 @@
           };
         }
 
+        image.crossOrigin = "Anonymous"
         // this will start creating image
         image.src = imageSrc;
     };
