@@ -37517,6 +37517,9 @@ ToolOptionsToolbar.prototype.customScrollMode = true;
           };
         }
 
+        if (options.crossOrigin) {
+          image.crossOrigin = options.crossOrigin;
+        }
         // this will start creating image
         image.src = imageSrc;
     };
@@ -37691,6 +37694,7 @@ ToolOptionsToolbar.prototype.customScrollMode = true;
     pluginsNamespace.BackgroundImage = BackgroundImageTool;
 
 }(jQuery, DrawerJs.plugins.BaseTool, DrawerJs.plugins, DrawerJs.util));
+
 (function(DrawerApi) {
 
     /**
