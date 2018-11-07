@@ -37356,10 +37356,6 @@ ToolOptionsToolbar.prototype.customScrollMode = true;
             _this.drawerInstance.showError(err);
           };
         }
-
-        if (options.crossOrigin) {
-          image.crossOrigin = options.crossOrigin;
-        }
         // this will start creating image
         image.src = imageSrc;
     };
