@@ -37356,6 +37356,7 @@ ToolOptionsToolbar.prototype.customScrollMode = true;
             _this.drawerInstance.showError(err);
           };
         }
+
         // this will start creating image
         image.src = imageSrc;
     };
