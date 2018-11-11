@@ -100,7 +100,7 @@
             contentConfig: {
                 saveInHtml: false,
                 saveCanvasData: function(canvasId, canvasData){
-                    localStorage.setItem('canvas_' + canvasId, JSON.stringify(canvasData));
+                    localStorage.setItem('canvas_' + canvasId, JSON.stringify(JSON.parse(canvasData)));
                     saveContent();
                 },
                 loadCanvasData: function(canvasId){
