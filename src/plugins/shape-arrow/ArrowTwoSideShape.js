@@ -46,7 +46,7 @@
   ArrowTwoSide.prototype = Object.create(BaseShape.prototype);
   ArrowTwoSide.prototype.constructor = ArrowTwoSide;
 
-  ArrowTwoSide.prototype.checkOnlyWidth = true;
+  ArrowTwoSide.prototype.checkOnlyWidthOrHeight = true;
 
   ArrowTwoSide.prototype._defaultOptions = {
     lineAngleTooltip: {
