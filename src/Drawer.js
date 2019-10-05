@@ -731,7 +731,10 @@
     var firstRun = !this.$imageElement;
 
     this.$imageElement = $(document.getElementById('canvas_image_' + this.id));
-
+    this.$imageElement.parent().css({
+        'position': 'relative'
+    });
+    
     if (firstRun) {
       if (this.options.align) {
          this.aligmentCss = this._generateAlignCss(this.options.align);
@@ -894,11 +897,7 @@
     var $canvas = $('<canvas width="' + this.width + '"' +
     ' height="' + this.height + '" />');
 
-    this.$canvasEditContainer = $('<span id="redactor-drawer-box" ' +
-    'data-canvas-id="' + this.id + '" tabindex="0"></span>');
     this.$canvasEditContainer = $('<span></span>');
-    this.$canvasEditContainer.attr('id', 'redactor-drawer-box');
-    this.$canvasEditContainer.attr('data-canvas-id', this.id);
     this.$canvasEditContainer.attr({
       'id':'redactor-drawer-box',
       'class': 'drawer-instance-container',
@@ -920,8 +919,8 @@
     this.aligmentCss = this.getAligmentCssFor(this.$imageElement);
 
     this.$canvasEditContainer.append($canvas);
-
-    $('body').append(this.$canvasEditContainer);
+    
+    this.$imageElement.parent().append(this.$canvasEditContainer);
     this.adjustEditContainer();
     $(window).on('resize.drawer' + this.id, function () {
       _this.adjustEditContainer(false, true);
@@ -1275,8 +1274,8 @@
       this.$canvasEditContainer.removeClass('animated');
     }
     this.$canvasEditContainer.css({
-      top: imageOffset.top,
-      left: imageOffset.left
+      top: 0,
+      left: 0
     });
     if (!withAnimation) {
       if (doNotUseDelay) {
