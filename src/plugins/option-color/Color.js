@@ -36,6 +36,11 @@
      * @type {DrawerJs.plugins.OpacityControl}
      */
       this.opacityControl = new pluginsNamespace.OpacityControl(this.drawer, this.options);
+      
+    /**
+     * Variable to save color used before switching to transparent
+     */
+      this.transparentSaveColor = null;
     };
 
     ColorTool.prototype = Object.create(BaseToolOptions.prototype);
@@ -67,14 +72,11 @@
    * @param {String} selectedColor Hash value of user selected color.
    */
   ColorTool.prototype._onColorSelected = function (selectedColor) {
-    if (selectedColor == 'transparent') {
-      var opacity = this.opacityControl.getOpacity();
-      var colorWithAlfaRgba = this._hexToRgba(selectedColor, opacity);
-  
-      this.drawer.setColor(colorWithAlfaRgba); 
-    } else {
-      this.drawer.setColor(selectedColor);
+    if (selectedColor == "rgba(0, 0, 0, 0)") {
+      //selected transparent color
+      this.saveColor();
     }
+    this.drawer.setColor(selectedColor);
   };
 
 
@@ -106,6 +108,7 @@
         // @todo: rework in target.getColor()
         color = target.get('stroke');
         this.colorControl.disableTransparent();
+        this.restoreColor();
       }  else {
         color = target.get('fill');
         this.colorControl.enableTransparent();
@@ -132,6 +135,48 @@
         var source = fColor._source;
         var opacity = source[3];
         this.opacityControl.setOpacity(opacity);
+  };
+
+  /**
+   * Shows / hides transparency based on current selected tool
+   * @param {BaseTool} tool
+   */
+  ColorTool.prototype.onActivateTool = function (tool) {
+      if (tool instanceof pluginsNamespace.Line ||
+          tool instanceof pluginsNamespace.ArrowOneSide ||
+          tool instanceof pluginsNamespace.ArrowTwoSide ||
+          tool instanceof pluginsNamespace.Pencil) {
+        //no transparent for them
+        this.colorControl.disableTransparent();
+        this.restoreColor();
+      } else {
+        //should be save to activate
+        this.colorControl.enableTransparent();
+      }
+  };
+  
+  /**
+   * Save current color into transparentSaveColor
+   */
+  ColorTool.prototype.saveColor = function () {
+    console.log("saving");
+    if(!this.transparentSaveColor) {
+      console.log("saving1");
+      this.transparentSaveColor = this.drawer.activeColor;
+    }
+  };
+  
+  /**
+   * Load color from transparentSaveColor
+   */
+  ColorTool.prototype.restoreColor = function () {
+    console.log("restoring");
+    if(this.transparentSaveColor) {
+      console.log("restoring1");
+      this._onColorSelected(this.transparentSaveColor);
+      this.colorControl.setColor(this.transparentSaveColor);
+      this.transparentSaveColor = null;
+    }
   };
 
 
