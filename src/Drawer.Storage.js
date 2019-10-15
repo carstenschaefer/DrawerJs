@@ -232,7 +232,7 @@
 
   Drawer.prototype.getSerializedCanvas = function () {
     var serializedCanvas = this.fCanvas.toJSON();
-    var serializedCanvasStr = JSON.stringify(serializedCanvas, null, 2);
+    var serializedCanvasStr = JSON.stringify(serializedCanvas);
     return serializedCanvasStr;
   };
 
