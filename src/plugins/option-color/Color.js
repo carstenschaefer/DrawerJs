@@ -159,9 +159,7 @@
    * Save current color into transparentSaveColor
    */
   ColorTool.prototype.saveColor = function () {
-    console.log("saving");
     if(!this.transparentSaveColor) {
-      console.log("saving1");
       this.transparentSaveColor = this.drawer.activeColor;
     }
   };
@@ -170,9 +168,7 @@
    * Load color from transparentSaveColor
    */
   ColorTool.prototype.restoreColor = function () {
-    console.log("restoring");
     if(this.transparentSaveColor) {
-      console.log("restoring1");
       this._onColorSelected(this.transparentSaveColor);
       this.colorControl.setColor(this.transparentSaveColor);
       this.transparentSaveColor = null;
