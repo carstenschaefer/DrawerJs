@@ -48,7 +48,7 @@
   ArrowOneSide.prototype = Object.create(BaseShape.prototype);
   ArrowOneSide.prototype.constructor = ArrowOneSide;
 
-  ArrowOneSide.prototype.checkOnlyWidth = true;
+  ArrowOneSide.prototype.checkOnlyWidthOrHeight = true;
 
   ArrowOneSide.prototype._defaultOptions = {
     lineAngleTooltip: {

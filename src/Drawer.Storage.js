@@ -189,8 +189,8 @@
         });
 
     this.trigger(this.EVENT_EDIT_START);
-
-    this.$canvasEditContainer.on('keydown', '.canvas-container', function (event) {
+    
+    this.$canvasEditContainer.on('keydown', function (event) {
       _this.trigger(_this.EVENT_KEYDOWN, event);
 
       var isDelKey = event.which == 8,
@@ -232,7 +232,7 @@
 
   Drawer.prototype.getSerializedCanvas = function () {
     var serializedCanvas = this.fCanvas.toJSON();
-    var serializedCanvasStr = JSON.stringify(serializedCanvas, null, 2);
+    var serializedCanvasStr = JSON.stringify(serializedCanvas);
     return serializedCanvasStr;
   };
 

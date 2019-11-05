@@ -526,6 +526,8 @@
       result.left += currScrollLeft;
       $currElement = $currElement.parent();
     }
+    result.top += $(document).scrollTop();
+    result.left += $(document).scrollLeft();
     return result;
   };
 

@@ -276,10 +276,14 @@
     var left = 0;
 
     var arrowSize = 8,
-        scroll = util.getScrollTopFromElement($trigger),
         triggerSizes = $trigger.get(0).getBoundingClientRect(),
-        tooltipSizes = $tooltip.get(0).getBoundingClientRect();
-
+        tooltipSizes = $tooltip.get(0).getBoundingClientRect(),
+        //use just document scroll because tooltips are relative to document
+        scroll = {
+            left: $(document).scrollLeft(),
+            top: $(document).scrollTop(),
+        };
+    
     switch (position.positionX) {
       case 'right':
         left = scroll.left + triggerSizes.left + triggerSizes.width + arrowSize;

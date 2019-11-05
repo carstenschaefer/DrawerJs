@@ -66,6 +66,7 @@
     this.activeToolIsShape = false;
 
     this.drawer.on(this.drawer.EVENT_CANVAS_START_RESIZE, this.hideStyleDropdown.bind(this));
+    this.drawer.on(this.drawer.EVENT_OBJECT_ADDED, this._onObjectAdded.bind(this));
   };
 
   ShapeBorder.prototype = Object.create(BaseToolOptions.prototype);
